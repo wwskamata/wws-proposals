@@ -725,8 +725,9 @@ function doAuth(){
   }
 }
 function show(){
-  document.getElementById('auth-screen').style.display = 'none';
-  document.getElementById('main').style.display = 'block';
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('main').style.display='block';
+  var _a=0,_t=setInterval(function(){_a++;var wi=document.querySelectorAll('.wf-photo img');if(wi.length>=3&&wi[0].offsetHeight>0){var _h=wi[0].offsetHeight;[wi[1],wi[2]].forEach(function(i){i.style.height=_h+'px';i.style.width='auto';i.style.maxWidth='none';});clearInterval(_t);}if(_a>25)clearInterval(_t);},200);
 }
 function switchTab(group, id){
   document.querySelectorAll('[id^="'+group+'-"]').forEach(function(p){
@@ -735,6 +736,15 @@ function switchTab(group, id){
   var btns = document.querySelectorAll('.tabs .tab-btn');
   btns[0].classList.toggle('active', id === 'before');
   btns[1].classList.toggle('active', id === 'after');
+  if(id==='after'){setTimeout(function(){
+    var p1=document.querySelector('#photo-after img[alt="写真1"]');
+    if(!p1||!p1.offsetHeight)return;
+    var h=p1.offsetHeight;
+    ['写真2','写真3'].forEach(function(alt){
+      var img=document.querySelector('#photo-after img[alt="'+alt+'"]');
+      if(img){img.style.height=h+'px';img.style.width='auto';img.style.maxWidth='none';img.style.display='block';img.style.margin='0 auto';}
+    });
+  },150);}
 }
 </script>
 </body>
