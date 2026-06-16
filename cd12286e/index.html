@@ -736,15 +736,21 @@ function switchTab(group, id){
   var btns = document.querySelectorAll('.tabs .tab-btn');
   btns[0].classList.toggle('active', id === 'before');
   btns[1].classList.toggle('active', id === 'after');
-  if(id==='after'){setTimeout(function(){
+  if(id==='after'){
+    var applyH=function(h){
+      ['写真2','写真3'].forEach(function(alt){
+        var img=document.querySelector('#photo-after img[alt="'+alt+'"]');
+        if(img){img.style.height=h+'px';img.style.width='auto';img.style.maxWidth='none';img.style.display='block';img.style.margin='0 auto';}
+      });
+    };
     var p1=document.querySelector('#photo-after img[alt="写真1"]');
-    if(!p1||!p1.offsetHeight)return;
-    var h=p1.offsetHeight;
-    ['写真2','写真3'].forEach(function(alt){
-      var img=document.querySelector('#photo-after img[alt="'+alt+'"]');
-      if(img){img.style.height=h+'px';img.style.width='auto';img.style.maxWidth='none';img.style.display='block';img.style.margin='0 auto';}
-    });
-  },150);}
+    if(p1){
+      var calcH=function(){
+        if(p1.naturalWidth&&p1.naturalHeight){applyH(Math.round(p1.naturalHeight*290/p1.naturalWidth));}
+      };
+      if(p1.complete&&p1.naturalHeight){calcH();}else{p1.addEventListener('load',calcH);setTimeout(calcH,300);}
+    }
+  }
 }
 </script>
 </body>
