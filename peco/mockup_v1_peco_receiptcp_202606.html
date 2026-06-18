@@ -115,8 +115,9 @@ body{margin:0;padding:0;font-family:'Noto Sans JP',sans-serif;}
 #td-right{width:50%;background:#fff;}
 #td-right-inner{overflow-y:auto;padding:14px 16px 48px;}
 
-/* グリッド */
-.grid{display:flex;flex-direction:column;align-items:center;gap:32px;}
+/* グリッド：横並び折り返し */
+.grid{display:flex;flex-direction:row;flex-wrap:wrap;align-items:flex-start;gap:20px;padding:4px;}
+.screen-wrap{flex-shrink:0;}
 
 /* 画面wrap */
 .screen-wrap{display:flex;flex-direction:column;align-items:center;position:relative;}
@@ -162,6 +163,10 @@ html,body{height:100%;overflow:hidden;}
 #panels-table{height:1px;}
 #td-left,#td-right{height:100%;}
 #td-left-inner,#td-right-inner{height:100%;overflow-y:auto;}
+/* ===== ドラッグ区切り ===== */
+#td-divider{width:6px;background:#e0e0e0;cursor:col-resize;position:relative;user-select:none;transition:background .15s;}
+#td-divider:hover,#td-divider.dragging{background:#bbb;}
+#td-divider::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:2px;height:48px;background:#aaa;border-radius:2px;}
 
 /* 工数テーブル */
 .kosu-h{font-size:12px;font-weight:700;color:#333;border-left:4px solid #e87722;padding-left:8px;margin-bottom:6px;}
@@ -635,6 +640,9 @@ function checkAuth(){
       </div><!-- /td-left-inner -->
     </td><!-- /td-left -->
 
+    <!-- ドラッグ区切り -->
+    <td id="td-divider"></td>
+
     <!-- 右：工数算定 -->
     <td id="td-right">
       <div id="td-right-inner">
@@ -740,6 +748,42 @@ function adjustPanels(){
 }
 window.addEventListener('load', adjustPanels);
 window.addEventListener('resize', adjustPanels);
+
+/* ===== ドラッグリサイズ ===== */
+(function(){
+  var divider  = document.getElementById('td-divider');
+  var tdLeft   = document.getElementById('td-left');
+  var tdRight  = document.getElementById('td-right');
+  var dragging = false, startX, startLeftW, startRightW;
+
+  divider.addEventListener('mousedown', function(e){
+    dragging   = true;
+    startX     = e.clientX;
+    startLeftW = tdLeft.offsetWidth;
+    startRightW= tdRight.offsetWidth;
+    divider.classList.add('dragging');
+    document.body.style.cursor     = 'col-resize';
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', function(e){
+    if(!dragging) return;
+    var dx      = e.clientX - startX;
+    var total   = startLeftW + startRightW;
+    var newLeft = Math.max(200, Math.min(total - 200, startLeftW + dx));
+    tdLeft.style.width  = newLeft + 'px';
+    tdRight.style.width = (total - newLeft) + 'px';
+  });
+
+  document.addEventListener('mouseup', function(){
+    if(!dragging) return;
+    dragging = false;
+    divider.classList.remove('dragging');
+    document.body.style.cursor     = '';
+    document.body.style.userSelect = '';
+  });
+})();
 /* サマリー開閉 */
 function toggleSummary(){
   var body  = document.getElementById('summary-body');
