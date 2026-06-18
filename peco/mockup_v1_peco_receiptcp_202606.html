@@ -156,6 +156,13 @@ body{margin:0;padding:0;font-family:'Noto Sans JP',sans-serif;}
 /* 言語切替 */
 #lang-toggle{background:#555;color:#fff;border:none;border-radius:5px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;}
 
+/* ===== 独立スクロール ===== */
+html,body{height:100%;overflow:hidden;}
+/* panels-table は残り高さを全部使うトリック */
+#panels-table{height:1px;}
+#td-left,#td-right{height:100%;}
+#td-left-inner,#td-right-inner{height:100%;overflow-y:auto;}
+
 /* 工数テーブル */
 .kosu-h{font-size:12px;font-weight:700;color:#333;border-left:4px solid #e87722;padding-left:8px;margin-bottom:6px;}
 .kosu-sub{font-size:10px;color:#888;margin-bottom:12px;line-height:1.5;}
@@ -721,6 +728,18 @@ function checkAuth(){
 
 <!-- ===== JS ===== -->
 <script>
+/* ===== パネル高さ動的調整 ===== */
+function adjustPanels(){
+  var used = ['titlebar','summary-bar','flowbar'].reduce(function(h,id){
+    var el = document.getElementById(id);
+    return h + (el ? el.offsetHeight : 0);
+  }, 0);
+  var h = (window.innerHeight - used) + 'px';
+  document.getElementById('td-left-inner').style.height  = h;
+  document.getElementById('td-right-inner').style.height = h;
+}
+window.addEventListener('load', adjustPanels);
+window.addEventListener('resize', adjustPanels);
 /* サマリー開閉 */
 function toggleSummary(){
   var body  = document.getElementById('summary-body');
