@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>福袋デジタルクーポン カスタマイズA・B 画面フロー案</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{margin:0;padding:0;font-family:"Noto Sans JP",sans-serif;background:#f8f8f8;}
+
+/* ① タイトルバー */
+#titlebar{
+  background:#fff;border-bottom:2px solid #e87722;
+  padding:0 20px;height:44px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 1px 4px rgba(0,0,0,.07);
+  font-family:"Noto Sans JP",sans-serif;
+  position:sticky;top:0;z-index:100;
+}
+#titlebar h1{font-size:13px;font-weight:700;color:#333;}
+#titlebar p{font-size:9px;color:#888;margin-top:1px;}
+.legend{display:flex;gap:12px;font-size:10px;align-items:center;}
+.legend-item{display:flex;align-items:center;gap:4px;}
+.lbox{width:11px;height:11px;border-radius:2px;flex-shrink:0;}
+.lbox.c{border:2px solid #e53935;background:#fff5f5;}
+.lbox.o{background:#fff;border:1px solid #ccc;}
+
+/* ② フロー図バー */
+#flowbar{
+  background:#fff;border-bottom:2px solid #e0e0e0;
+  padding:10px 20px 12px;
+  font-family:"Noto Sans JP",sans-serif;
+}
+#flowbar .ftitle{
+  font-size:12px;font-weight:700;color:#333;
+  border-left:4px solid #e87722;padding-left:8px;margin-bottom:10px;
+}
+.flow-row{display:flex;align-items:center;gap:0;min-width:900px;margin-bottom:8px;}
+.flow-label{font-size:9px;font-weight:700;color:#fff;background:#e87722;padding:2px 7px;border-radius:99px;margin-right:8px;white-space:nowrap;}
+.flow-label.b{background:#1565c0;}
+.fnode{background:#fff;border:1.5px solid #e87722;border-radius:6px;padding:4px 10px;font-size:9px;color:#333;font-weight:700;white-space:nowrap;text-align:center;line-height:1.3;}
+.fnode.b{border-color:#1565c0;}
+.fnode.gray{border-color:#aaa;color:#888;}
+.farrow{color:#ccc;font-size:14px;padding:0 4px;flex-shrink:0;}
+.farrow.a{color:#e87722;}
+.farrow.b{color:#1565c0;}
+.fnote{font-size:8px;color:#aaa;text-align:center;margin-top:2px;}
+
+/* ③ テーブルレイアウト（flexbox禁止） */
+#panels-table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+  font-family:"Noto Sans JP",sans-serif;
+  font-size:12px;
+}
+#panels-table > tbody > tr > td{vertical-align:top;padding:0;}
+
+#td-left{width:320px;background:#f0f0f0;border-right:2px solid #e0e0e0;}
+#td-left-inner{
+  height:calc(100vh - 44px - 180px);
+  overflow-y:auto;
+  padding:14px 12px 48px;
+}
+
+#td-right{background:#fff;}
+#td-right-inner{
+  height:calc(100vh - 44px - 180px);
+  overflow-y:auto;
+  padding:14px 16px 48px;
+}
+
+/* 画面グリッド：縦1列・中央揃え */
+.grid{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:32px;
+}
+
+/* バッジ */
+.id-cust{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;border-radius:99px;padding:2px 7px;font-size:9px;font-weight:700;white-space:nowrap;}
+.id-std {background:#dcfce7;color:#166534;border:1px solid #86efac;border-radius:99px;padding:2px 7px;font-size:9px;font-weight:700;white-space:nowrap;}
+.id-ops {background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:99px;padding:2px 7px;font-size:9px;font-weight:700;white-space:nowrap;}
+
+/* カスタム赤枠 */
+.custom-mark{position:relative;border:2px solid #e53935 !important;border-radius:4px;background:#fff5f5 !important;}
+.custom-mark::before{content:"✏️ カスタム";position:absolute;top:-10px;right:4px;background:#fff5f5;color:#c62828;border:1px solid #e53935;font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;white-space:nowrap;z-index:10;}
+
+/* 画面ラベル・バッジ */
+.screen-wrap{
+  display:flex;flex-direction:column;align-items:center;
+  position:relative;
+}
+.screen-label{font-size:11px;color:#555;margin-top:8px;font-weight:700;}
+.screen-sub{font-size:10px;color:#888;margin-top:2px;text-align:center;}
+.screen-ids{
+  position:absolute;
+  top:0;right:-6px;
+  display:flex;flex-direction:column;gap:3px;align-items:flex-end;
+  z-index:20;
+}
+.screen-ids span{
+  font-size:8px;font-weight:700;
+  padding:2px 7px;border-radius:99px;
+  box-shadow:0 1px 4px rgba(0,0,0,0.18);
+}
+
+/* Phone frame */
+.phone{width:280px;background:#fff;border-radius:36px;border:1.5px solid #ccc;box-shadow:0 4px 16px rgba(0,0,0,0.13);padding:10px;}
+.phone-inner{border-radius:28px;overflow:hidden;background:#fff;min-height:500px;display:flex;flex-direction:column;border:1px solid #e8e8e8;}
+.sb{display:flex;justify-content:space-between;padding:7px 16px 3px;font-size:9px;font-weight:700;color:#333;background:#fff;}
+
+/* SmartE-Coupon 共通UI */
+.sec-nav{background:#1a1a2e;color:#fff;padding:11px 14px 10px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px;}
+.sec-nav .back{font-size:14px;color:#aaa;margin-right:2px;cursor:pointer;}
+.sec-sub{background:#f5f5f5;padding:5px 14px;font-size:9px;color:#888;border-bottom:1px solid #e8e8e8;}
+.content-area{flex:1;padding:0;overflow:hidden;}
+.coupon-card{background:#fff;border-radius:8px;margin:8px;padding:10px;border:1px solid #e8e8e8;display:flex;gap:8px;align-items:center;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+.coupon-img{width:50px;height:50px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.coupon-img.pepper{background:linear-gradient(135deg,#ff8a65,#e53935);}
+.coupon-img.steak{background:linear-gradient(135deg,#8d6e63,#5d4037);}
+.coupon-img.shrimp{background:linear-gradient(135deg,#f48fb1,#e91e63);}
+.coupon-img.drink{background:linear-gradient(135deg,#81d4fa,#0288d1);}
+.coupon-info{flex:1;min-width:0;}
+.coupon-name{font-size:11px;font-weight:700;color:#222;line-height:1.3;}
+.coupon-remain{font-size:10px;color:#e87722;font-weight:700;margin-top:3px;}
+.coupon-used{font-size:9px;color:#bbb;margin-top:1px;}
+.coupon-arrow{font-size:12px;color:#ccc;flex-shrink:0;}
+.btn-orange{background:#e87722;color:#fff;border:none;border-radius:8px;width:calc(100% - 16px);padding:12px;font-size:12px;font-weight:700;font-family:inherit;display:block;margin:8px;text-align:center;}
+.btn-blue{background:#1565c0;color:#fff;border:none;border-radius:8px;width:calc(100% - 16px);padding:12px;font-size:12px;font-weight:700;font-family:inherit;display:block;margin:8px;text-align:center;}
+.btn-outline{background:#fff;color:#555;border:1.5px solid #ddd;border-radius:8px;width:calc(100% - 16px);padding:10px;font-size:11px;font-family:inherit;display:block;margin:4px 8px;text-align:center;}
+.btn-line{background:#06c755;color:#fff;border:none;border-radius:8px;width:calc(100% - 32px);margin:0 16px;padding:13px;font-size:13px;font-weight:700;font-family:inherit;text-align:center;}
+.section-header{background:#f5f5f5;padding:7px 14px;font-size:9px;color:#888;font-weight:700;border-bottom:1px solid #e8e8e8;border-top:1px solid #e8e8e8;margin-top:4px;}
+.section-header-a{background:#fff3e0;padding:7px 14px;font-size:9px;color:#e87722;font-weight:700;border-bottom:1px solid #ffe0b2;margin-top:4px;display:flex;justify-content:space-between;align-items:center;}
+
+/* 枚数選択UI */
+.qty-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid #f0f0f0;}
+.qty-left{font-size:11px;color:#333;font-weight:600;}
+.qty-left-sub{font-size:9px;color:#aaa;margin-top:1px;}
+.qty-ctrl{display:flex;align-items:center;gap:8px;}
+.qty-btn{width:30px;height:30px;border-radius:50%;border:1.5px solid #e87722;background:#fff;color:#e87722;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1;cursor:pointer;}
+.qty-num{font-size:18px;font-weight:700;color:#333;width:28px;text-align:center;}
+.qty-summary{background:#fff3e0;margin:8px;border-radius:8px;padding:10px 14px;border:1px solid #ffe0b2;}
+.qty-summary-row{display:flex;justify-content:space-between;font-size:11px;color:#555;margin-bottom:3px;}
+.qty-summary-total{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#e87722;border-top:1px dashed #ffe0b2;padding-top:5px;margin-top:3px;}
+
+/* 使用完了画面 */
+.complete-bg{background:#f0fff4;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;}
+.complete-icon{width:68px;height:68px;border-radius:50%;background:#4caf50;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:14px;box-shadow:0 3px 12px rgba(76,175,80,0.3);}
+.complete-title{font-size:14px;font-weight:700;color:#1b5e20;text-align:center;margin-bottom:6px;}
+.complete-sub{font-size:10px;color:#388e3c;text-align:center;margin-bottom:16px;line-height:1.5;}
+.complete-receipt{background:#fff;border-radius:8px;padding:10px 14px;width:100%;border:1px solid #c8e6c9;}
+.receipt-row{display:flex;justify-content:space-between;font-size:10px;color:#555;padding:3px 0;border-bottom:1px dashed #e0e0e0;}
+.receipt-row:last-child{border-bottom:none;font-weight:700;color:#1b5e20;}
+
+/* パターン区切り */
+.pattern-divider{
+  display:flex;flex-direction:column;align-items:center;
+  margin:8px 0;gap:6px;
+}
+.pattern-divider-title{
+  display:flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:700;
+}
+.pattern-badge-a{background:#e87722;color:#fff;padding:3px 14px;border-radius:99px;font-size:10px;font-weight:700;}
+.pattern-badge-b{background:#1565c0;color:#fff;padding:3px 14px;border-radius:99px;font-size:10px;font-weight:700;}
+.pattern-divider-line{width:80%;height:2px;background:#ddd;}
+.pattern-desc{font-size:9px;color:#888;text-align:center;line-height:1.5;padding:0 8px;background:#fff;border-radius:6px;padding:6px 10px;border:1px solid #e0e0e0;}
+
+/* LINE入力ボックス */
+.code-box{border:2px solid #e87722;border-radius:8px;padding:12px;font-size:16px;width:calc(100%-32px);margin:12px 16px;text-align:center;background:#fafafa;color:#333;font-weight:700;letter-spacing:6px;font-family:"Noto Sans JP",monospace;}
+
+/* 福袋選択カード */
+.fuku-card{background:#fff;border-radius:10px;margin:8px;border:2px solid #e8e8e8;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+.fuku-card-header{background:#1a1a2e;color:#fff;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;}
+.fuku-card-title{font-size:12px;font-weight:700;}
+.fuku-card-price{font-size:11px;color:#ffd54f;font-weight:700;}
+.fuku-card-body{padding:10px 14px;}
+.fuku-detail-row{display:flex;align-items:center;gap:6px;font-size:10px;color:#555;margin-bottom:4px;}
+.fuku-detail-dot{width:6px;height:6px;border-radius:50%;background:#e87722;flex-shrink:0;}
+</style>
+</head>
+<body>
+<!-- ===== パスワード保護オーバーレイ ===== -->
+<div id="auth-overlay" style="
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:#1a1a2e;z-index:99999;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Noto Sans JP',sans-serif;
+">
+  <div style="
+    background:#fff;border-radius:16px;padding:40px 36px;
+    width:340px;text-align:center;
+    box-shadow:0 8px 40px rgba(0,0,0,0.3);
+  ">
+    <div style="font-size:32px;margin-bottom:12px;">🔒</div>
+    <div style="font-size:16px;font-weight:700;color:#222;margin-bottom:4px;">閲覧にはパスワードが必要です</div>
+    <div style="font-size:11px;color:#888;margin-bottom:24px;">This page is password protected</div>
+    <input id="auth-pw" type="password" placeholder="パスワードを入力"
+      style="
+        width:100%;padding:12px 14px;
+        border:2px solid #e0e0e0;border-radius:8px;
+        font-size:14px;font-family:inherit;
+        box-sizing:border-box;margin-bottom:12px;
+        outline:none;transition:border-color 0.2s;
+      "
+      onkeydown="if(event.key==='Enter')checkAuth()"
+      onfocus="this.style.borderColor='#e87722'"
+      onblur="this.style.borderColor='#e0e0e0'"
+    >
+    <div id="auth-error" style="
+      color:#e53935;font-size:11px;margin-bottom:10px;
+      display:none;font-weight:700;
+    ">❌ パスワードが違います</div>
+    <button onclick="checkAuth()" style="
+      width:100%;padding:13px;
+      background:#e87722;color:#fff;
+      border:none;border-radius:8px;
+      font-size:13px;font-weight:700;font-family:inherit;
+      cursor:pointer;transition:background 0.2s;
+    "
+    onmouseover="this.style.background='#d4691b'"
+    onmouseout="this.style.background='#e87722'"
+    >アクセスする</button>
+    <div style="font-size:9px;color:#bbb;margin-top:16px;">
+      WWS 社内共有資料 ／ 無断転載禁止
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // セッション中に認証済みなら即表示
+  if(sessionStorage.getItem('wws_auth')==='ok'){
+    document.getElementById('auth-overlay').style.display='none';
+  }
+})();
+
+async function checkAuth(){
+  var pw = document.getElementById('auth-pw').value;
+  var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  var hex = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  // SHA-256 of "test"
+  if(hex === '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08'){
+    sessionStorage.setItem('wws_auth','ok');
+    document.getElementById('auth-overlay').style.display='none';
+  } else {
+    var err = document.getElementById('auth-error');
+    err.style.display='block';
+    document.getElementById('auth-pw').value='';
+    document.getElementById('auth-pw').style.borderColor='#e53935';
+    setTimeout(function(){ document.getElementById('auth-pw').style.borderColor='#e0e0e0'; },1500);
+  }
+}
+</script>
+<!-- ===== /パスワード保護オーバーレイ ===== -->
+
+
+<!-- ① タイトルバー -->
+<div id="titlebar">
+  <div>
+    <h1>福袋デジタルクーポン｜カスタマイズA・B 画面フロー案</h1>
+    <p>SmartE-Coupon 実装検討 ／ PL 福袋キャンペーン 2025</p>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+    <span class="id-cust">SmartE-Coupon</span>
+    <span style="background:#e87722;color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:99px;">カスタマイズA</span>
+    <span style="background:#1565c0;color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:99px;">カスタマイズB</span>
+    <div style="width:1px;height:20px;background:#e0e0e0;margin:0 4px;"></div>
+    <div class="legend">
+      <div class="legend-item"><div class="lbox c"></div><span>✏️ カスタム変更箇所</span></div>
+      <div class="legend-item"><div class="lbox o"></div><span>標準UIそのまま</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ② フロー図 -->
+<div id="flowbar">
+  <div class="ftitle">ユーザーフロー図（両パターン比較）</div>
+  <div style="overflow-x:auto;">
+    <!-- Pattern A -->
+    <div class="flow-row">
+      <span class="flow-label">A：URL発行</span>
+      <div class="fnode">福袋購入<div class="fnote">実店舗/EC</div></div>
+      <span class="farrow a">→</span>
+      <div class="fnode" style="border-color:#e87722;background:#fff3e0;">URL発行<div class="fnote">購入ごと</div></div>
+      <span class="farrow a">→</span>
+      <div class="fnode">URLタップ<div class="fnote">メール/QR</div></div>
+      <span class="farrow a">→</span>
+      <div class="fnode">LINEログイン<div class="fnote">ユーザー紐づけ</div></div>
+      <span class="farrow a">→</span>
+      <div class="fnode" style="border-color:#e87722;background:#fff3e0;">マイページ<div class="fnote">複数福袋表示</div></div>
+      <span class="farrow a">→</span>
+      <div class="fnode" style="border-color:#e87722;background:#fff3e0;">クーポン一覧<div class="fnote">4種・残枚数</div></div>
+      <span class="farrow a">→</span>
+      <div class="fnode" style="border-color:#e87722;background:#fff3e0;">枚数選択<div class="fnote">+/−で指定</div></div>
+      <span class="farrow a">→</span>
+      <div class="fnode" style="border-color:#4caf50;background:#f0fff4;">使用完了<div class="fnote">スタッフ確認</div></div>
+    </div>
+    <!-- Pattern B -->
+    <div class="flow-row" style="margin-top:6px;">
+      <span class="flow-label b">B：2プロパティ</span>
+      <div class="fnode b">福袋を選ぶ<div class="fnote">①か②</div></div>
+      <span class="farrow b">→</span>
+      <div class="fnode b">アクセス<br>コード入力<div class="fnote">会員カード</div></div>
+      <span class="farrow b">→</span>
+      <div class="fnode b">クーポン取得<div class="fnote">1回限り</div></div>
+      <span class="farrow b">→</span>
+      <div class="fnode b" style="border-color:#1565c0;background:#e3f2fd;">クーポン一覧<div class="fnote">3〜4種</div></div>
+      <span class="farrow b">→</span>
+      <div class="fnode b" style="border-color:#1565c0;background:#e3f2fd;">枚数選択<div class="fnote">+/−で指定</div></div>
+      <span class="farrow b">→</span>
+      <div class="fnode" style="border-color:#4caf50;background:#f0fff4;">使用完了<div class="fnote">スタッフ確認</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 左右パネル -->
+<table id="panels-table">
+  <tbody><tr>
+
+    <!-- 左：画面フロー -->
+    <td id="td-left">
+      <div id="td-left-inner">
+        <div class="grid">
+
+          <!-- ======================== PATTERN A ======================== -->
+          <div class="pattern-divider" style="width:100%;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="height:1px;width:40px;background:#e87722;"></div>
+              <span class="pattern-badge-a">カスタマイズ A｜URL発行方式</span>
+              <div style="height:1px;width:40px;background:#e87722;"></div>
+            </div>
+            <div class="pattern-desc">複数福袋の購入可。購入ごとにURLを発行し、<br>アクセスでマイページにクーポンが追加される。</div>
+          </div>
+
+          <!-- A-1: URL受取 -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:41</span><span>▲◀🔋</span></div>
+                <div class="sec-nav">
+                  <span>🎁 福袋クーポン受け取り</span>
+                </div>
+                <div style="flex:1;padding:16px;background:#fff;">
+                  <div style="text-align:center;margin-bottom:14px;">
+                    <div style="font-size:24px;margin-bottom:8px;">🎁</div>
+                    <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:4px;">福袋①をお買い上げ<br>ありがとうございます</div>
+                    <div style="font-size:9px;color:#888;line-height:1.6;">下記URLをタップして<br>クーポンをお受け取りください</div>
+                  </div>
+                  <div class="custom-mark" style="margin:0 0 12px;border-radius:8px;padding:10px 12px;">
+                    <div style="font-size:8px;color:#e87722;font-weight:700;margin-bottom:6px;">📎 クーポン受け取りURL</div>
+                    <div style="font-size:9px;color:#555;word-break:break-all;background:#f5f5f5;padding:6px;border-radius:4px;font-family:monospace;">https://ec.smart-ecoupon.com<br>/pl-fuku/abc123xyz</div>
+                  </div>
+                  <div style="font-size:9px;color:#aaa;text-align:center;margin-bottom:10px;">または QRコードを読み取り</div>
+                  <div style="border:1px dashed #ccc;border-radius:8px;padding:12px;text-align:center;background:#fafafa;">
+                    <div style="font-size:36px;color:#ddd;">⊞</div>
+                    <div style="font-size:8px;color:#aaa;margin-top:4px;">QR コード</div>
+                  </div>
+                  <div style="font-size:9px;color:#bbb;text-align:center;margin-top:10px;">有効期限：2025年12月31日</div>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label">A-1｜URLでクーポン受け取り</div>
+            <div class="screen-sub">購入ごとに専用URLを発行（レシート・メール等）</div>
+            <div class="screen-ids">
+              <span class="id-cust">F-01</span>
+              <span class="id-cust">B-01</span>
+            </div>
+          </div>
+
+          <!-- A-2: LINEログイン -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:42</span><span>▲◀🔋</span></div>
+                <div class="sec-nav"><span>🎁 PL 福袋クーポン</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;background:#fff;">
+                  <div style="font-size:28px;margin-bottom:12px;">🎁</div>
+                  <div style="font-size:14px;font-weight:700;color:#222;text-align:center;margin-bottom:6px;">クーポンを受け取る</div>
+                  <div style="font-size:10px;color:#888;text-align:center;margin-bottom:24px;line-height:1.6;">LINEアカウントと紐づけて<br>マイページにクーポンを追加します</div>
+                  <div class="btn-line" style="border-radius:8px;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px 0;">
+                    <span style="font-size:16px;">💬</span>
+                    <span>LINEでログイン</span>
+                  </div>
+                  <div style="font-size:9px;color:#bbb;text-align:center;margin-top:14px;line-height:1.5;">初めての方は自動でアカウントが<br>作成されます</div>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label">A-2｜LINEログイン（ユーザー紐づけ）</div>
+            <div class="screen-sub">URLアクセス後、LINEログインでユーザーと紐づけ</div>
+            <div class="screen-ids">
+              <span class="id-std">標準</span>
+            </div>
+          </div>
+
+          <!-- A-3: マイページ（複数福袋） -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:43</span><span>▲◀🔋</span></div>
+                <div class="sec-nav"><span>🎁 マイクーポン</span></div>
+                <div style="flex:1;background:#f5f5f5;overflow:hidden;">
+                  <div style="font-size:9px;color:#888;padding:8px 14px 4px;">取得済み福袋クーポン</div>
+                  <!-- 福袋①（1回目） -->
+                  <div class="custom-mark section-header-a">
+                    <span>🎁 福袋①（1回目購入）</span>
+                    <span style="font-size:9px;font-weight:700;color:#e87722;">14枚</span>
+                  </div>
+                  <div class="coupon-card">
+                    <div class="coupon-img pepper">🍚</div>
+                    <div class="coupon-info">
+                      <div class="coupon-name">ペッパーライス引換券</div>
+                      <div class="coupon-remain">残 8/8 枚</div>
+                    </div>
+                    <span class="coupon-arrow">›</span>
+                  </div>
+                  <div class="coupon-card" style="margin-top:0;">
+                    <div class="coupon-img steak">🥩</div>
+                    <div class="coupon-info">
+                      <div class="coupon-name">〇〇引換券</div>
+                      <div class="coupon-remain">残 2/2 枚</div>
+                    </div>
+                    <span class="coupon-arrow">›</span>
+                  </div>
+                  <!-- 福袋①（2回目）→ 複数購入ケース -->
+                  <div class="custom-mark section-header-a" style="margin-top:4px;">
+                    <span>🎁 福袋①（2回目購入）</span>
+                    <span style="font-size:9px;font-weight:700;color:#e87722;">14枚</span>
+                  </div>
+                  <div class="coupon-card">
+                    <div class="coupon-img pepper">🍚</div>
+                    <div class="coupon-info">
+                      <div class="coupon-name">ペッパーライス引換券</div>
+                      <div class="coupon-remain">残 8/8 枚</div>
+                    </div>
+                    <span class="coupon-arrow">›</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label">A-3｜マイページ（複数福袋が並列表示）</div>
+            <div class="screen-sub">購入回数分の福袋グループが追加される</div>
+            <div class="screen-ids">
+              <span class="id-cust">F-02</span>
+            </div>
+          </div>
+
+          <!-- A-4: クーポン一覧（福袋内） -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:44</span><span>▲◀🔋</span></div>
+                <div class="sec-nav">
+                  <span class="back">‹</span>
+                  <span>🎁 福袋① クーポン一覧</span>
+                </div>
+                <div class="sec-sub">1回目購入分 ／ 合計残14枚</div>
+                <div style="flex:1;background:#f5f5f5;">
+                  <div class="section-header">収録クーポン（4種類）</div>
+                  <div class="coupon-card">
+                    <div class="coupon-img pepper">🍚</div>
+                    <div class="coupon-info">
+                      <div class="coupon-name">ペッパーライス引換券</div>
+                      <div class="coupon-remain">残 8 枚</div>
+                      <div class="coupon-used" style="color:#aaa;">使用済 0 枚</div>
+                    </div>
+                    <span class="coupon-arrow">›</span>
+                  </div>
+                  <div class="coupon-card" style="margin-top:0;">
+                    <div class="coupon-img steak">🥩</div>
+                    <div class="coupon-info">
+                      <div class="coupon-name">〇〇引換券</div>
+                      <div class="coupon-remain">残 2 枚</div>
+                      <div class="coupon-used" style="color:#aaa;">使用済 0 枚</div>
+                    </div>
+                    <span class="coupon-arrow">›</span>
+                  </div>
+                  <div class="coupon-card" style="margin-top:0;">
+                    <div class="coupon-img shrimp">🦐</div>
+                    <div class="coupon-info">
+                      <div class="coupon-name">△△引換券</div>
+                      <div class="coupon-remain">残 2 枚</div>
+                      <div class="coupon-used" style="color:#aaa;">使用済 0 枚</div>
+                    </div>
+                    <span class="coupon-arrow">›</span>
+                  </div>
+                  <div class="coupon-card" style="margin-top:0;">
+                    <div class="coupon-img drink">🥤</div>
+                    <div class="coupon-info">
+                      <div class="coupon-name">ドリンク引換券</div>
+                      <div class="coupon-remain">残 2 枚</div>
+                      <div class="coupon-used" style="color:#aaa;">使用済 0 枚</div>
+                    </div>
+                    <span class="coupon-arrow">›</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label">A-4｜クーポン種別一覧（残枚数表示）</div>
+            <div class="screen-sub">福袋内の4種類クーポンを残枚数付きで一覧表示</div>
+            <div class="screen-ids">
+              <span class="id-std">標準</span>
+            </div>
+          </div>
+
+          <!-- A-5: 枚数選択 -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:45</span><span>▲◀🔋</span></div>
+                <div class="sec-nav">
+                  <span class="back">‹</span>
+                  <span>使用枚数を選択</span>
+                </div>
+                <div style="flex:1;background:#fff;">
+                  <div style="display:flex;gap:10px;align-items:center;padding:14px;border-bottom:1px solid #f0f0f0;">
+                    <div class="coupon-img pepper" style="width:44px;height:44px;font-size:18px;">🍚</div>
+                    <div>
+                      <div style="font-size:12px;font-weight:700;color:#222;">ペッパーライス引換券</div>
+                      <div style="font-size:10px;color:#e87722;font-weight:700;margin-top:2px;">残 8 枚</div>
+                    </div>
+                  </div>
+                  <div class="section-header" style="background:#f9f9f9;">使用する枚数を選んでください</div>
+                  <div class="custom-mark" style="margin:10px;border-radius:8px;padding:4px 0;">
+                    <div class="qty-row">
+                      <div>
+                        <div class="qty-left">ペッパーライス引換券</div>
+                        <div class="qty-left-sub">残 8 枚</div>
+                      </div>
+                      <div class="qty-ctrl">
+                        <div class="qty-btn">－</div>
+                        <div class="qty-num">2</div>
+                        <div class="qty-btn">＋</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="qty-summary">
+                    <div class="qty-summary-row"><span>使用枚数</span><span>2枚</span></div>
+                    <div class="qty-summary-row"><span>使用後残枚数</span><span>6枚</span></div>
+                  </div>
+                  <div style="padding:4px 8px;">
+                    <button class="btn-orange">2枚 使用する</button>
+                    <button class="btn-outline">キャンセル</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label">A-5｜使用枚数選択（+/−ステッパー）</div>
+            <div class="screen-sub">1回の操作で複数枚を選択して一括消化</div>
+            <div class="screen-ids">
+              <span class="id-cust">F-03</span>
+            </div>
+          </div>
+
+          <!-- A-6: 使用完了 -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:45</span><span>▲◀🔋</span></div>
+                <div class="sec-nav"><span>使用完了</span></div>
+                <div class="complete-bg">
+                  <div class="complete-icon">✓</div>
+                  <div class="complete-title">ご利用ありがとうございます！</div>
+                  <div class="complete-sub">スタッフが確認しました<br>クーポンを消化しました</div>
+                  <div class="complete-receipt">
+                    <div class="receipt-row"><span>クーポン名</span><span>ペッパーライス引換券</span></div>
+                    <div class="receipt-row"><span>使用枚数</span><span>2枚</span></div>
+                    <div class="receipt-row"><span>使用日時</span><span>2025/01/15 12:05</span></div>
+                    <div class="receipt-row"><span>残り枚数</span><span>6枚</span></div>
+                  </div>
+                  <button class="btn-outline" style="width:100%;margin-top:12px;">マイページへ戻る</button>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label">A-6｜使用完了（スタッフ確認後）</div>
+            <div class="screen-sub">残枚数が更新される。複数回に分けて使用可能</div>
+            <div class="screen-ids">
+              <span class="id-std">標準</span>
+            </div>
+          </div>
+
+
+          <!-- ======================== PATTERN B ======================== -->
+          <div class="pattern-divider" style="width:100%;margin-top:16px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="height:1px;width:40px;background:#1565c0;"></div>
+              <span class="pattern-badge-b">カスタマイズ B｜2プロパティ方式</span>
+              <div style="height:1px;width:40px;background:#1565c0;"></div>
+            </div>
+            <div class="pattern-desc">福袋①②をそれぞれ独立したプロパティで管理。<br>1人1福袋限定。アクセスコードで取得。</div>
+          </div>
+
+          <!-- B-1: 福袋選択 -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:41</span><span>▲◀🔋</span></div>
+                <div class="sec-nav" style="background:#1a2a5e;"><span>🎁 PL 福袋クーポン 2025</span></div>
+                <div style="flex:1;background:#f5f5f5;padding:8px 0;">
+                  <div style="font-size:9px;color:#888;padding:6px 14px;">ご購入の福袋を選択してください</div>
+                  <!-- 福袋① -->
+                  <div class="fuku-card">
+                    <div class="fuku-card-header" style="background:#1a2a5e;">
+                      <span class="fuku-card-title">🎁 福袋①（プレミアム）</span>
+                      <span class="fuku-card-price">¥3,000</span>
+                    </div>
+                    <div class="fuku-card-body">
+                      <div class="fuku-detail-row"><div class="fuku-detail-dot"></div>ペッパーライス引換券 × 8枚</div>
+                      <div class="fuku-detail-row"><div class="fuku-detail-dot"></div>〇〇引換券 × 2枚</div>
+                      <div class="fuku-detail-row"><div class="fuku-detail-dot"></div>△△引換券 × 2枚</div>
+                      <div class="fuku-detail-row"><div class="fuku-detail-dot"></div>ドリンク引換券 × 2枚</div>
+                      <button class="btn-orange" style="margin:8px 0 0;padding:9px;font-size:11px;">このクーポンを取得する</button>
+                    </div>
+                  </div>
+                  <!-- 福袋② -->
+                  <div class="fuku-card">
+                    <div class="fuku-card-header" style="background:#1565c0;">
+                      <span class="fuku-card-title">🎁 福袋②（スタンダード）</span>
+                      <span class="fuku-card-price">¥1,500</span>
+                    </div>
+                    <div class="fuku-card-body">
+                      <div class="fuku-detail-row"><div class="fuku-detail-dot" style="background:#1565c0;"></div>ペッパーライス引換券 × 3枚</div>
+                      <div class="fuku-detail-row"><div class="fuku-detail-dot" style="background:#1565c0;"></div>〇〇引換券 × 2枚</div>
+                      <div class="fuku-detail-row"><div class="fuku-detail-dot" style="background:#1565c0;"></div>△△引換券 × 2枚</div>
+                      <button class="btn-blue" style="margin:8px 0 0;padding:9px;font-size:11px;">このクーポンを取得する</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label">B-1｜福袋選択（2プロパティ）</div>
+            <div class="screen-sub">福袋①（プレミアム）または②（スタンダード）を選択</div>
+            <div class="screen-ids">
+              <span class="id-cust">F-04</span>
+            </div>
+          </div>
+
+          <!-- B-2: アクセスコード入力 -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:42</span><span>▲◀🔋</span></div>
+                <div class="sec-nav" style="background:#1565c0;">
+                  <span class="back" style="color:#90caf9;">‹</span>
+                  <span>アクセスコードを入力</span>
+                </div>
+                <div style="flex:1;background:#fff;padding:20px 0;">
+                  <div style="padding:0 16px 16px;border-bottom:1px solid #f0f0f0;text-align:center;">
+                    <div style="font-size:24px;margin-bottom:8px;">🔑</div>
+                    <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:6px;">福袋②（スタンダード）</div>
+                    <div style="font-size:9px;color:#888;line-height:1.6;">会員カードに記載されているコードを<br>入力してクーポンを取得してください</div>
+                  </div>
+                  <div style="padding:16px;">
+                    <div style="font-size:10px;color:#555;font-weight:700;margin-bottom:6px;">アクセスコード</div>
+                    <div class="custom-mark" style="border-radius:8px;padding:2px;">
+                      <input type="text" class="code-box" placeholder="例：PL-B2025" readonly style="display:block;width:100%;margin:0;"/>
+                    </div>
+                    <div style="font-size:9px;color:#aaa;margin-top:6px;text-align:center;">※ コードは1回のみ有効です</div>
+                    <button class="btn-blue" style="margin:16px 0 0;">確認して取得する</button>
+                    <div style="font-size:9px;color:#bbb;text-align:center;margin-top:8px;">コードは福袋購入時にお渡しした<br>会員カードに記載されています</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label">B-2｜アクセスコード入力（クローズドクーポン）</div>
+            <div class="screen-sub">会員カード記載のコードを入力してクーポンを取得</div>
+            <div class="screen-ids">
+              <span class="id-std">標準</span>
+            </div>
+          </div>
+
+          <!-- B-3: 取得完了 -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:42</span><span>▲◀🔋</span></div>
+                <div class="sec-nav" style="background:#1565c0;"><span>クーポン取得完了</span></div>
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;background:#e3f2fd;">
+                  <div style="width:68px;height:68px;border-radius:50%;background:#1565c0;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:14px;">✓</div>
+                  <div style="font-size:14px;font-weight:700;color:#0d47a1;text-align:center;margin-bottom:6px;">クーポンを取得しました！</div>
+                  <div style="font-size:10px;color:#1565c0;text-align:center;margin-bottom:18px;line-height:1.6;">福袋②（スタンダード）の<br>クーポンがマイページに追加されました</div>
+                  <div style="background:#fff;border-radius:8px;padding:10px 14px;width:100%;border:1px solid #90caf9;margin-bottom:14px;">
+                    <div style="font-size:10px;color:#555;margin-bottom:4px;">取得したクーポン（3種・計7枚）</div>
+                    <div style="font-size:9px;color:#1565c0;font-weight:700;">✓ ペッパーライス引換券 × 3枚</div>
+                    <div style="font-size:9px;color:#1565c0;font-weight:700;">✓ 〇〇引換券 × 2枚</div>
+                    <div style="font-size:9px;color:#1565c0;font-weight:700;">✓ △△引換券 × 2枚</div>
+                  </div>
+                  <button class="btn-blue" style="width:100%;margin:0;">クーポン一覧を見る</button>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label">B-3｜クーポン取得完了</div>
+            <div class="screen-sub">取得内容を確認。コードは1回限り（再取得不可）</div>
+            <div class="screen-ids">
+              <span class="id-ops">設定のみ</span>
+            </div>
+          </div>
+
+          <!-- B-4: クーポン一覧 -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:43</span><span>▲◀🔋</span></div>
+                <div class="sec-nav" style="background:#1565c0;">
+                  <span>🎁 マイクーポン一覧</span>
+                </div>
+                <div class="sec-sub">福袋②（スタンダード）／ 残 7 枚</div>
+                <div style="flex:1;background:#f5f5f5;">
+                  <div class="section-header" style="background:#e3f2fd;color:#1565c0;border-color:#90caf9;">取得済みクーポン（3種類）</div>
+                  <div class="coupon-card">
+                    <div class="coupon-img pepper">🍚</div>
+                    <div class="coupon-info">
+                      <div class="coupon-name">ペッパーライス引換券</div>
+                      <div class="coupon-remain" style="color:#1565c0;">残 3 枚</div>
+                      <div class="coupon-used">使用済 0 枚</div>
+                    </div>
+                    <span class="coupon-arrow">›</span>
+                  </div>
+                  <div class="coupon-card" style="margin-top:0;">
+                    <div class="coupon-img steak">🥩</div>
+                    <div class="coupon-info">
+                      <div class="coupon-name">〇〇引換券</div>
+                      <div class="coupon-remain" style="color:#1565c0;">残 2 枚</div>
+                      <div class="coupon-used">使用済 0 枚</div>
+                    </div>
+                    <span class="coupon-arrow">›</span>
+                  </div>
+                  <div class="coupon-card" style="margin-top:0;">
+                    <div class="coupon-img shrimp">🦐</div>
+                    <div class="coupon-info">
+                      <div class="coupon-name">△△引換券</div>
+                      <div class="coupon-remain" style="color:#1565c0;">残 2 枚</div>
+                      <div class="coupon-used">使用済 0 枚</div>
+                    </div>
+                    <span class="coupon-arrow">›</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label">B-4｜クーポン一覧（福袋② 3種類）</div>
+            <div class="screen-sub">プロパティ内の全クーポンを残枚数付きで表示</div>
+            <div class="screen-ids">
+              <span class="id-std">標準</span>
+            </div>
+          </div>
+
+          <!-- B-5: 枚数選択 -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:45</span><span>▲◀🔋</span></div>
+                <div class="sec-nav" style="background:#1565c0;">
+                  <span class="back" style="color:#90caf9;">‹</span>
+                  <span>使用枚数を選択</span>
+                </div>
+                <div style="flex:1;background:#fff;">
+                  <div style="display:flex;gap:10px;align-items:center;padding:14px;border-bottom:1px solid #f0f0f0;">
+                    <div class="coupon-img pepper" style="width:44px;height:44px;font-size:18px;">🍚</div>
+                    <div>
+                      <div style="font-size:12px;font-weight:700;color:#222;">ペッパーライス引換券</div>
+                      <div style="font-size:10px;color:#1565c0;font-weight:700;margin-top:2px;">残 3 枚</div>
+                    </div>
+                  </div>
+                  <div class="section-header" style="background:#f9f9f9;">使用する枚数を選んでください</div>
+                  <div class="custom-mark" style="margin:10px;border-radius:8px;padding:4px 0;">
+                    <div class="qty-row">
+                      <div>
+                        <div class="qty-left">ペッパーライス引換券</div>
+                        <div class="qty-left-sub">残 3 枚</div>
+                      </div>
+                      <div class="qty-ctrl">
+                        <div class="qty-btn" style="border-color:#1565c0;color:#1565c0;">－</div>
+                        <div class="qty-num">1</div>
+                        <div class="qty-btn" style="border-color:#1565c0;color:#1565c0;">＋</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="qty-summary" style="background:#e3f2fd;border-color:#90caf9;">
+                    <div class="qty-summary-row"><span>使用枚数</span><span>1枚</span></div>
+                    <div class="qty-summary-row"><span>使用後残枚数</span><span>2枚</span></div>
+                  </div>
+                  <div style="padding:4px 8px;">
+                    <button class="btn-blue">1枚 使用する</button>
+                    <button class="btn-outline">キャンセル</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label">B-5｜使用枚数選択（+/−ステッパー）</div>
+            <div class="screen-sub">Aと同様のUI。1〜残枚数の範囲で選択</div>
+            <div class="screen-ids">
+              <span class="id-cust">F-03</span>
+            </div>
+          </div>
+
+          <!-- B-6: 使用完了 -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:46</span><span>▲◀🔋</span></div>
+                <div class="sec-nav" style="background:#1565c0;"><span>使用完了</span></div>
+                <div class="complete-bg" style="background:#e3f2fd;">
+                  <div class="complete-icon" style="background:#1565c0;">✓</div>
+                  <div class="complete-title" style="color:#0d47a1;">ご利用ありがとうございます！</div>
+                  <div class="complete-sub" style="color:#1565c0;">スタッフが確認しました<br>クーポンを消化しました</div>
+                  <div class="complete-receipt" style="border-color:#90caf9;">
+                    <div class="receipt-row"><span>クーポン名</span><span>ペッパーライス引換券</span></div>
+                    <div class="receipt-row"><span>使用枚数</span><span>1枚</span></div>
+                    <div class="receipt-row"><span>使用日時</span><span>2025/01/15 12:30</span></div>
+                    <div class="receipt-row" style="color:#0d47a1;"><span>残り枚数</span><span>2枚</span></div>
+                  </div>
+                  <button class="btn-outline" style="width:100%;margin-top:12px;">マイページへ戻る</button>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label">B-6｜使用完了（スタッフ確認後）</div>
+            <div class="screen-sub">残枚数が更新される。次回以降も同様に利用可能</div>
+            <div class="screen-ids">
+              <span class="id-std">標準</span>
+            </div>
+          </div>
+
+        </div><!-- /grid -->
+      </div><!-- /td-left-inner -->
+    </td>
+
+    <!-- 右：工数算定依頼 -->
+    <td id="td-right">
+      <div id="td-right-inner">
+
+        <!-- パターン比較表 -->
+        <div style="font-size:12px;font-weight:700;color:#333;border-left:4px solid #e87722;padding-left:8px;margin-bottom:6px;">パターン比較サマリー</div>
+        <div style="overflow-x:auto;margin-bottom:20px;">
+        <table style="width:100%;border-collapse:collapse;font-size:11px;">
+          <thead>
+            <tr style="background:#2d2d2d;color:#fff;">
+              <th style="padding:8px 10px;width:28%;">項目</th>
+              <th style="padding:8px 10px;width:36%;background:#e87722;">A：URL発行方式</th>
+              <th style="padding:8px 10px;width:36%;background:#1565c0;">B：2プロパティ方式</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid #f0f0f0;background:#fff;">
+              <td style="padding:8px 10px;font-weight:600;color:#555;">複数購入</td>
+              <td style="padding:8px 10px;color:#e87722;font-weight:700;">✓ 可能（何回でも）</td>
+              <td style="padding:8px 10px;color:#1565c0;font-weight:700;">✗ 1種類1回限り</td>
+            </tr>
+            <tr style="border-bottom:1px solid #f0f0f0;background:#f9f9f9;">
+              <td style="padding:8px 10px;font-weight:600;color:#555;">クーポン取得方法</td>
+              <td style="padding:8px 10px;">専用URL（購入ごと）</td>
+              <td style="padding:8px 10px;">アクセスコード入力</td>
+            </tr>
+            <tr style="border-bottom:1px solid #f0f0f0;background:#fff;">
+              <td style="padding:8px 10px;font-weight:600;color:#555;">プロパティ数</td>
+              <td style="padding:8px 10px;">1（福袋①②共通）</td>
+              <td style="padding:8px 10px;">2（福袋①②で分離）</td>
+            </tr>
+            <tr style="border-bottom:1px solid #f0f0f0;background:#f9f9f9;">
+              <td style="padding:8px 10px;font-weight:600;color:#555;">不正防止</td>
+              <td style="padding:8px 10px;">URL固有ID管理</td>
+              <td style="padding:8px 10px;">1コード1回限り制御</td>
+            </tr>
+            <tr style="border-bottom:1px solid #f0f0f0;background:#fff;">
+              <td style="padding:8px 10px;font-weight:600;color:#555;">開発工数</td>
+              <td style="padding:8px 10px;color:#e53935;font-weight:700;">大（URL発行基盤）</td>
+              <td style="padding:8px 10px;color:#e87722;font-weight:700;">中（設定＋枚数選択）</td>
+            </tr>
+            <tr style="background:#f9f9f9;">
+              <td style="padding:8px 10px;font-weight:600;color:#555;">推奨シーン</td>
+              <td style="padding:8px 10px;font-size:10px;">大量購入・法人向け<br>ギフト需要がある場合</td>
+              <td style="padding:8px 10px;font-size:10px;">1人1購入・コード配布<br>で運用したい場合</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+
+        <!-- 工数算定依頼テーブル（共通） -->
+        <div style="font-size:12px;font-weight:700;color:#333;border-left:4px solid #e87722;padding-left:8px;margin-bottom:6px;">工数算定依頼ポイント</div>
+        <div style="font-size:10px;color:#888;margin-bottom:12px;">赤枠箇所に対応するカスタム開発要件<br>※標準機能・管理画面設定のみの箇所は含まない</div>
+        <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:11px;">
+          <thead>
+            <tr style="background:#e87722;color:#fff;">
+              <th style="padding:9px 10px;width:9%;white-space:nowrap;">ID</th>
+              <th style="padding:9px 10px;width:8%;">区分</th>
+              <th style="padding:9px 10px;width:18%;">機能名</th>
+              <th style="padding:9px 10px;width:38%;">要件概要</th>
+              <th style="padding:9px 10px;width:10%;text-align:center;">難易度</th>
+              <th style="padding:9px 10px;width:17%;">確認事項</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- A専用 -->
+            <tr><td colspan="6" style="background:#fff3e0;padding:6px 10px;font-size:10px;font-weight:700;color:#e87722;">【カスタマイズA専用】URL発行方式</td></tr>
+            <tr style="border-bottom:1px solid #f0f0f0;">
+              <td style="padding:9px 10px;white-space:nowrap;"><span class="id-cust" style="font-size:10px;padding:3px 8px;">F-01</span></td>
+              <td><span style="background:#dbeafe;color:#1d4ed8;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;">フロント</span></td>
+              <td style="font-weight:600;color:#333;font-size:11px;">URL受取画面</td>
+              <td style="color:#555;line-height:1.6;font-size:10px;">購入完了時に表示する専用URL・QRコード受取画面。URL固有IDと購入情報を紐づけて表示。有効期限・利用規約の文言も表示。</td>
+              <td style="text-align:center;"><span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;">小</span></td>
+              <td style="font-size:10px;color:#e53935;">POS・ECシステムとの受け渡し方法を確認</td>
+            </tr>
+            <tr style="border-bottom:1px solid #f0f0f0;background:#fafafa;">
+              <td style="padding:9px 10px;"><span class="id-cust" style="font-size:10px;padding:3px 8px;">B-01</span></td>
+              <td><span style="background:#fce7f3;color:#9d174d;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;">バック</span></td>
+              <td style="font-weight:600;color:#333;font-size:11px;">URL発行・紐づけ基盤</td>
+              <td style="color:#555;line-height:1.6;font-size:10px;">①購入ごとにユニークURLを発行するAPI。②URLアクセス時にLINEユーザーIDと購入情報を紐づけ。③同一URLの2重取得防止。④クーポンを該当ユーザーのマイページに追加するAPI連携。</td>
+              <td style="text-align:center;"><span style="background:#fee2e2;color:#991b1b;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;">大</span></td>
+              <td style="font-size:10px;color:#e53935;">標準APIで購入連携可能か確認必須</td>
+            </tr>
+            <tr style="border-bottom:1px solid #f0f0f0;">
+              <td style="padding:9px 10px;"><span class="id-cust" style="font-size:10px;padding:3px 8px;">F-02</span></td>
+              <td><span style="background:#dbeafe;color:#1d4ed8;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;">フロント</span></td>
+              <td style="font-weight:600;color:#333;font-size:11px;">マイページ複数福袋表示</td>
+              <td style="color:#555;line-height:1.6;font-size:10px;">マイページに購入回数分の福袋グループを表示。「福袋①（1回目）」「福袋①（2回目）」のようにグループヘッダーで区分け。各グループ内にクーポン種別を一覧表示。</td>
+              <td style="text-align:center;"><span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;">小〜中</span></td>
+              <td style="font-size:10px;color:#e53935;">マイページのHTMLカスタマイズ範囲を確認</td>
+            </tr>
+            <!-- 共通 -->
+            <tr><td colspan="6" style="background:#f5f5f5;padding:6px 10px;font-size:10px;font-weight:700;color:#555;">【A・B共通】枚数選択機能</td></tr>
+            <tr style="border-bottom:1px solid #f0f0f0;background:#fafafa;">
+              <td style="padding:9px 10px;"><span class="id-cust" style="font-size:10px;padding:3px 8px;">F-03</span></td>
+              <td><span style="background:#dbeafe;color:#1d4ed8;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;">フロント</span></td>
+              <td style="font-weight:600;color:#333;font-size:11px;">使用枚数選択UI</td>
+              <td style="color:#555;line-height:1.6;font-size:10px;">クーポン詳細画面に +/− ステッパーを追加。選択範囲は1〜残枚数。確認サマリー（使用枚数・使用後残枚数）をリアルタイム更新。一括消化ボタンで確定。</td>
+              <td style="text-align:center;"><span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;">小〜中</span></td>
+              <td style="font-size:10px;color:#e53935;">クーポン使用画面のカスタム可否確認</td>
+            </tr>
+            <!-- B専用 -->
+            <tr><td colspan="6" style="background:#e3f2fd;padding:6px 10px;font-size:10px;font-weight:700;color:#1565c0;">【カスタマイズB専用】2プロパティ方式</td></tr>
+            <tr style="border-bottom:1px solid #f0f0f0;">
+              <td style="padding:9px 10px;"><span class="id-cust" style="font-size:10px;padding:3px 8px;">F-04</span></td>
+              <td><span style="background:#dbeafe;color:#1d4ed8;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;">フロント</span></td>
+              <td style="font-weight:600;color:#333;font-size:11px;">福袋選択トップ画面</td>
+              <td style="color:#555;line-height:1.6;font-size:10px;">福袋①②のプロパティを選択するランディングページ。各福袋の内容（クーポン種別・枚数・金額）をカード形式で表示。取得済みの場合は「取得済」として非活性化。</td>
+              <td style="text-align:center;"><span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;">小</span></td>
+              <td style="font-size:10px;color:#e53935;">LP作成またはプロパティTOP改修か確認</td>
+            </tr>
+            <tr style="border-bottom:1px solid #f0f0f0;background:#fafafa;">
+              <td style="padding:9px 10px;"><span class="id-ops" style="font-size:10px;padding:3px 8px;">設定</span></td>
+              <td><span style="background:#fef3c7;color:#92400e;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;">設定のみ</span></td>
+              <td style="font-weight:600;color:#333;font-size:11px;">プロパティ設定・<br>クーポン登録</td>
+              <td style="color:#555;line-height:1.6;font-size:10px;">管理画面で福袋①②それぞれのプロパティを作成。各プロパティにクローズドクーポン（アクセスコード方式）を設定。枚数（8枚・3枚など）と有効期限を設定。</td>
+              <td style="text-align:center;"><span style="background:#dcfce7;color:#166534;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;">設定のみ</span></td>
+              <td style="font-size:10px;color:#555;">アクセスコードの一括発行対応可否を確認</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+
+        <!-- WWS確認事項 -->
+        <div style="margin-top:20px;background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:12px 14px;">
+          <div style="font-size:11px;font-weight:700;color:#e65100;margin-bottom:8px;">⚠️ WWS事前確認事項（見積前に確認）</div>
+          <div style="font-size:10px;color:#555;line-height:1.8;">
+            <div style="display:flex;gap:6px;"><span style="color:#e65100;font-weight:700;">① </span><span>【A】URLアクセス時のユーザー紐づけAPIが標準対応しているか（B-01の実装方式が変わる）</span></div>
+            <div style="display:flex;gap:6px;"><span style="color:#e65100;font-weight:700;">② </span><span>【A・B共通】クーポン使用画面に+/−ステッパーのUIカスタマイズが可能か（F-03に影響）</span></div>
+            <div style="display:flex;gap:6px;"><span style="color:#e65100;font-weight:700;">③ </span><span>【B】アクセスコードの一括CSVインポート機能が管理画面で対応しているか</span></div>
+            <div style="display:flex;gap:6px;"><span style="color:#e65100;font-weight:700;">④ </span><span>【A・B共通】クーポンの「残枚数」表示が標準マイページでサポートされているか</span></div>
+          </div>
+        </div>
+
+      </div><!-- /td-right-inner -->
+    </td>
+
+  </tr></tbody>
+</table>
+
+</body>
+</html>
