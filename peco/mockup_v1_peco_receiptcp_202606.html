@@ -345,64 +345,79 @@ function checkAuth(){
       <div style="display:flex;flex-direction:column;align-items:center;">
         <div class="fnode" data-i18n="②LINEログイン／メール">②LINEログイン<br>／メール</div>
         <div class="fline-label" data-i18n="認証方式未定">認証方式未定</div>
+        <div class="fline-label" style="color:#e87722;font-weight:700;">→ 画面A</div>
       </div>
       <div class="farrow">→</div>
 
-      <!-- 3: レシートアップ -->
+      <!-- 3: 賞品選択 (NEW) -->
       <div style="display:flex;flex-direction:column;align-items:center;">
-        <div class="fnode line-ocr" data-i18n="③レシート画像アップ">③レシート<br>画像アップ</div>
+        <div class="fnode" style="background:#fce4ec;border-color:#e91e63;color:#880e4f;" data-i18n="③賞品選択">③賞品選択</div>
+        <div class="fline-label" data-i18n="応募前に選択">応募前に選択</div>
+        <div class="fline-label" style="color:#e87722;font-weight:700;">→ 画面B</div>
+      </div>
+      <div class="farrow">→</div>
+
+      <!-- 4: レシートアップ -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="fnode line-ocr" data-i18n="④レシート画像アップ">④レシート<br>画像アップ</div>
         <div class="fline-label" data-i18n="JPG/PNG 10MB以内">JPG/PNG 10MB</div>
+        <div class="fline-label" style="color:#e87722;font-weight:700;">→ 画面C</div>
       </div>
       <div class="farrow">→</div>
 
-      <!-- 4: OCR審査 -->
+      <!-- 5: OCR審査 -->
       <div style="display:flex;flex-direction:column;align-items:center;">
-        <div class="fnode line-ocr" data-i18n="④OCR自動審査">④OCR<br>自動審査</div>
+        <div class="fnode line-ocr" data-i18n="⑤OCR自動審査">⑤OCR<br>自動審査</div>
         <div class="fline-label" data-i18n="即時判定">即時判定</div>
+        <div class="fline-label" style="color:#e87722;font-weight:700;">→ 画面D/D-B</div>
       </div>
       <div class="farrow">→</div>
 
-      <!-- 5: 分岐 -->
+      <!-- 6: 分岐 -->
       <div style="display:flex;flex-direction:column;align-items:center;">
-        <div class="fnode" style="background:#e8eaf6;border-color:#5c6bc0;color:#283593;" data-i18n="⑤審査結果分岐">⑤審査結果<br>分岐</div>
+        <div class="fnode" style="background:#e8eaf6;border-color:#5c6bc0;color:#283593;" data-i18n="⑥審査結果分岐">⑥審査結果<br>分岐</div>
         <div class="fline-label" data-i18n="OK / NG / 重複">OK / NG / 重複</div>
       </div>
       <div class="farrow">→</div>
 
-      <!-- 6: インスタントウィン -->
+      <!-- 7: インスタントウィン -->
       <div style="display:flex;flex-direction:column;align-items:center;">
-        <div class="fnode line-win" data-i18n="⑥インスタントウィン抽選">⑥インスタント<br>ウィン抽選</div>
+        <div class="fnode line-win" data-i18n="⑦インスタントウィン抽選">⑦インスタント<br>ウィン抽選</div>
         <div class="fline-label" data-i18n="Smart Kuji">Smart Kuji</div>
+        <div class="fline-label" style="color:#e87722;font-weight:700;">→ 画面E</div>
       </div>
       <div class="farrow">→</div>
 
-      <!-- 7: 当落分岐 -->
+      <!-- 8: 当落分岐 -->
       <div style="display:flex;flex-direction:column;align-items:center;">
-        <div class="fnode" style="background:#e8eaf6;border-color:#5c6bc0;color:#283593;" data-i18n="⑦当落分岐">⑦当落分岐</div>
+        <div class="fnode" style="background:#e8eaf6;border-color:#5c6bc0;color:#283593;" data-i18n="⑧当落分岐">⑧当落分岐</div>
         <div class="fline-label" data-i18n="当選 / ハズレ">当選 / ハズレ</div>
       </div>
       <div class="farrow">→</div>
 
-      <!-- 8a: デジタルギフト -->
+      <!-- 9a: デジタルギフト -->
       <div style="display:flex;flex-direction:column;align-items:center;">
-        <div class="fnode line-prize" data-i18n="⑧当選：デジタルDL">⑧当選：<br>デジタルDL</div>
+        <div class="fnode line-prize" data-i18n="⑨当選：デジタルDL">⑨当選：<br>デジタルDL</div>
         <div class="fline-label" data-i18n="壁紙・スタンプ">壁紙・スタンプ</div>
+        <div class="fline-label" style="color:#e87722;font-weight:700;">→ 画面F</div>
       </div>
 
       <div style="margin:0 6px;font-size:11px;color:#aaa;align-self:center;">or</div>
 
-      <!-- 8b: ぬいぐるみ -->
+      <!-- 9b: ぬいぐるみ -->
       <div style="display:flex;flex-direction:column;align-items:center;">
-        <div class="fnode line-prize custom-mark" data-i18n="⑧当選：郵送">⑧当選：<br>郵送申請</div>
+        <div class="fnode line-prize custom-mark" data-i18n="⑨当選：郵送">⑨当選：<br>郵送申請</div>
         <div class="fline-label" data-i18n="ぬいぐるみ（検討中）">ぬいぐるみ（検討中）</div>
+        <div class="fline-label" style="color:#e87722;font-weight:700;">→ 画面F-B</div>
       </div>
 
       <div class="farrow" style="margin-left:12px;">→</div>
 
-      <!-- 9: ハズレ -->
+      <!-- 10: ハズレ -->
       <div style="display:flex;flex-direction:column;align-items:center;">
-        <div class="fnode line-grey" data-i18n="⑨ハズレ">⑨ハズレ</div>
+        <div class="fnode line-grey" data-i18n="⑩ハズレ">⑩ハズレ</div>
         <div class="fline-label" data-i18n="再応募可">再応募可</div>
+        <div class="fline-label" style="color:#e87722;font-weight:700;">→ 画面G</div>
       </div>
 
     </div>
@@ -441,11 +456,60 @@ function checkAuth(){
                 </div>
               </div>
             </div>
-            <div class="screen-label" data-i18n="① ログイン画面">① ログイン画面</div>
+            <div class="screen-label" data-i18n="画面A ログイン">画面A ログイン</div>
             <div class="screen-sub" data-i18n="LINE版 or WEB版（回答待ち）">LINE版 or WEB版（回答待ち）</div>
           </div>
 
-          <!-- ===== 画面② レシートアップ ===== -->
+          <!-- ===== 画面③ 賞品選択 ===== -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:41</span><span>▲◀🔋</span></div>
+                <div class="ph-header">🎁 <span data-i18n="賞品を選ぶ">賞品を選ぶ</span></div>
+                <div class="ph-body" style="padding:10px 12px;">
+                  <div style="font-size:10px;color:#555;margin-bottom:10px;" data-i18n="応募したい賞品を選んでください。">応募したい賞品を選んでください。</div>
+                  <!-- 賞品カード1 -->
+                  <div style="border:2px solid #e87722;border-radius:8px;padding:10px;margin-bottom:8px;background:#fff9f0;cursor:pointer;">
+                    <div style="display:flex;gap:8px;align-items:center;">
+                      <div style="width:40px;height:40px;background:#ffe0b2;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;">🖼️</div>
+                      <div>
+                        <div style="font-size:11px;font-weight:700;" data-i18n="オリジナル壁紙">オリジナル壁紙</div>
+                        <div style="font-size:9px;color:#888;" data-i18n="デジタルダウンロード">デジタルダウンロード</div>
+                      </div>
+                      <div style="margin-left:auto;width:16px;height:16px;border-radius:50%;background:#e87722;border:2px solid #e87722;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;">✓</div>
+                    </div>
+                  </div>
+                  <!-- 賞品カード2 -->
+                  <div style="border:1.5px solid #e0e0e0;border-radius:8px;padding:10px;margin-bottom:8px;background:#fafafa;cursor:pointer;">
+                    <div style="display:flex;gap:8px;align-items:center;">
+                      <div style="width:40px;height:40px;background:#e3f2fd;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;">💌</div>
+                      <div>
+                        <div style="font-size:11px;font-weight:700;" data-i18n="デジタルスタンプ">デジタルスタンプ</div>
+                        <div style="font-size:9px;color:#888;" data-i18n="デジタルダウンロード">デジタルダウンロード</div>
+                      </div>
+                      <div style="margin-left:auto;width:16px;height:16px;border-radius:50%;border:2px solid #ccc;"></div>
+                    </div>
+                  </div>
+                  <!-- 賞品カード3 -->
+                  <div style="border:1.5px solid #e0e0e0;border-radius:8px;padding:10px;margin-bottom:14px;background:#fafafa;cursor:pointer;">
+                    <div style="display:flex;gap:8px;align-items:center;">
+                      <div style="width:40px;height:40px;background:#fce4ec;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;">🧸</div>
+                      <div>
+                        <div style="font-size:11px;font-weight:700;" data-i18n="ぬいぐるみ">ぬいぐるみ</div>
+                        <div style="font-size:9px;color:#888;" data-i18n="郵送（住所入力必要）">郵送（住所入力必要）</div>
+                      </div>
+                      <div style="margin-left:auto;width:16px;height:16px;border-radius:50%;border:2px solid #ccc;"></div>
+                    </div>
+                  </div>
+                  <button class="btn-orange" data-i18n="次へ（レシートをアップロード）">次へ（レシートをアップロード）</button>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label" data-i18n="画面B 賞品選択">画面B 賞品選択</div>
+            <div class="screen-sub" data-i18n="応募前に賞品を選択">応募前に賞品を選択</div>
+          </div>
+
+          <!-- ===== 画面④ レシートアップ ===== -->
           <div class="screen-wrap">
             <div class="phone">
               <div class="phone-inner">
@@ -463,37 +527,64 @@ function checkAuth(){
                 </div>
               </div>
             </div>
-            <div class="screen-label" data-i18n="② レシートアップロード">② レシートアップロード</div>
+            <div class="screen-label" data-i18n="画面C レシートアップロード">画面C レシートアップロード</div>
             <div class="screen-sub" data-i18n="SmartRecieco 標準UI">SmartRecieco 標準UI</div>
           </div>
 
-          <!-- ===== 画面③ 審査中 / 応募完了 ===== -->
+          <!-- ===== 画面③ 応募完了 ===== -->
           <div class="screen-wrap">
             <div class="phone">
               <div class="phone-inner">
                 <div class="sb"><span>9:41</span><span>▲◀🔋</span></div>
                 <div class="ph-header">✅ <span data-i18n="応募完了">応募完了</span></div>
-                <div class="ph-body" style="text-align:center;padding-top:20px;">
-                  <div style="font-size:32px;margin-bottom:10px;">🎉</div>
-                  <div style="font-size:13px;font-weight:700;margin-bottom:6px;" data-i18n="ご応募ありがとうございます！">ご応募ありがとうございます！</div>
-                  <div style="font-size:10px;color:#888;margin-bottom:16px;" data-i18n="審査完了後、即時抽選を行います。">審査完了後、即時抽選を行います。</div>
-                  <div style="background:#fff3e0;border-radius:8px;padding:12px;margin-bottom:16px;text-align:left;">
-                    <div style="font-size:10px;font-weight:700;margin-bottom:4px;" data-i18n="応募履歴">応募履歴</div>
-                    <div style="display:flex;justify-content:space-between;font-size:10px;padding:4px 0;border-bottom:1px solid #ffe0b2;">
-                      <span data-i18n="2027/01/06 14:32">2027/01/06 14:32</span>
-                      <span class="status-badge status-pending" data-i18n="審査中">審査中</span>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;font-size:10px;padding:4px 0;">
-                      <span data-i18n="2026/12/20 10:15">2026/12/20 10:15</span>
-                      <span class="status-badge status-ok" data-i18n="審査OK">審査OK</span>
-                    </div>
-                  </div>
-                  <button class="btn-outline" data-i18n="抽選する（審査OK後）">抽選する（審査OK後）</button>
+                <div class="ph-body" style="text-align:center;padding-top:28px;">
+                  <div style="font-size:36px;margin-bottom:12px;">🎉</div>
+                  <div style="font-size:13px;font-weight:700;margin-bottom:8px;" data-i18n="ご応募ありがとうございます！">ご応募ありがとうございます！</div>
+                  <div style="font-size:10px;color:#888;margin-bottom:20px;line-height:1.6;" data-i18n="レシートの審査が完了すると、自動的に抽選が行われます。">レシートの審査が完了すると、<br>自動的に抽選が行われます。</div>
+                  <button class="btn-outline" data-i18n="応募履歴を見る">応募履歴を見る</button>
                 </div>
               </div>
             </div>
-            <div class="screen-label" data-i18n="③ 応募完了 / 応募履歴">③ 応募完了 / 応募履歴</div>
-            <div class="screen-sub" data-i18n="即時審査 → 審査OK後に抽選解放">即時審査 → 審査OK後に抽選解放</div>
+            <div class="screen-label" data-i18n="画面D 応募完了">画面D 応募完了</div>
+            <div class="screen-sub" data-i18n="審査完了後に自動抽選">審査完了後に自動抽選</div>
+          </div>
+
+          <!-- ===== 画面③-B 応募履歴一覧 ===== -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:41</span><span>▲◀🔋</span></div>
+                <div class="ph-header">📋 <span data-i18n="応募履歴">応募履歴</span></div>
+                <div class="ph-body" style="padding:10px 12px;">
+                  <!-- 履歴行①：審査中 -->
+                  <div style="border:1px solid #e0e0e0;border-radius:8px;padding:10px;margin-bottom:8px;background:#fafafa;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                      <span style="font-size:10px;color:#888;" data-i18n="2027/01/08 11:20">2027/01/08 11:20</span>
+                      <span class="status-badge status-pending" data-i18n="審査中">審査中</span>
+                    </div>
+                    <button style="width:100%;background:#e0e0e0;color:#aaa;border:none;border-radius:5px;padding:7px;font-size:11px;font-weight:700;cursor:not-allowed;" data-i18n="抽選する（審査完了後）">抽選する（審査完了後）</button>
+                  </div>
+                  <!-- 履歴行②：審査OK → 抽選可 -->
+                  <div style="border:1px solid #a5d6a7;border-radius:8px;padding:10px;margin-bottom:8px;background:#f1f8e9;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                      <span style="font-size:10px;color:#888;" data-i18n="2027/01/06 14:32">2027/01/06 14:32</span>
+                      <span class="status-badge status-ok" data-i18n="審査OK">審査OK</span>
+                    </div>
+                    <button class="btn-orange" style="padding:7px;font-size:11px;" data-i18n="抽選する">抽選する</button>
+                  </div>
+                  <!-- 履歴行③：抽選済み（当選） -->
+                  <div style="border:1px solid #e0e0e0;border-radius:8px;padding:10px;background:#fafafa;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                      <span style="font-size:10px;color:#888;" data-i18n="2026/12/20 10:15">2026/12/20 10:15</span>
+                      <span class="status-badge status-win" data-i18n="当選">当選</span>
+                    </div>
+                    <button style="width:100%;background:#e0e0e0;color:#aaa;border:none;border-radius:5px;padding:7px;font-size:11px;font-weight:700;cursor:not-allowed;" data-i18n="抽選済み">抽選済み</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label" data-i18n="画面D-B 応募履歴一覧">画面D-B 応募履歴一覧</div>
+            <div class="screen-sub" data-i18n="審査OK行ごとに「抽選する」ボタン">審査OK行ごとに「抽選する」ボタン</div>
           </div>
 
           <!-- ===== 画面④ インスタントウィン演出 ===== -->
@@ -515,7 +606,7 @@ function checkAuth(){
                 </div>
               </div>
             </div>
-            <div class="screen-label" data-i18n="④ インスタントウィン演出">④ インスタントウィン演出</div>
+            <div class="screen-label" data-i18n="画面E インスタントウィン演出">画面E インスタントウィン演出</div>
             <div class="screen-sub" data-i18n="Smart Kuji カスタマイズアニメーション">Smart Kuji カスタマイズアニメーション</div>
             <div class="screen-ids">
               <span class="id-cust">F-03</span>
@@ -542,7 +633,7 @@ function checkAuth(){
                 </div>
               </div>
             </div>
-            <div class="screen-label" data-i18n="⑤ 当選画面（デジタルギフト）">⑤ 当選画面（デジタルギフト）</div>
+            <div class="screen-label" data-i18n="画面F 当選（デジタルギフト）">画面F 当選（デジタルギフト）</div>
             <div class="screen-sub" data-i18n="壁紙・スタンプDL">壁紙・スタンプDL</div>
           </div>
 
@@ -571,7 +662,7 @@ function checkAuth(){
                 </div>
               </div>
             </div>
-            <div class="screen-label" data-i18n="⑥ 当選画面（ぬいぐるみ郵送申請）">⑥ 当選画面（郵送申請）</div>
+            <div class="screen-label" data-i18n="画面F-B 当選（郵送申請）">画面F-B 当選（郵送申請）</div>
             <div class="screen-sub" data-i18n="個人情報入力フォーム（検討中）">個人情報入力フォーム（検討中）</div>
             <div class="screen-ids">
               <span class="id-cust">F-02</span>
@@ -594,7 +685,7 @@ function checkAuth(){
                 </div>
               </div>
             </div>
-            <div class="screen-label" data-i18n="⑦ ハズレ画面">⑦ ハズレ画面</div>
+            <div class="screen-label" data-i18n="画面G ハズレ">画面G ハズレ</div>
             <div class="screen-sub" data-i18n="Smart Kuji 標準UI">Smart Kuji 標準UI</div>
           </div>
 
@@ -629,7 +720,7 @@ function checkAuth(){
                 </div>
               </div>
             </div>
-            <div class="screen-label" data-i18n="⑧ 賞品画像表示（プランAオプション）">⑧ 賞品画像表示（プランA）</div>
+            <div class="screen-label" data-i18n="画面C-A 賞品画像表示（プランAオプション）">画面C-A 賞品画像表示（プランA）</div>
             <div class="screen-sub" data-i18n="応募フォームに景品画像を追加">応募フォームに景品画像を追加</div>
             <div class="screen-ids">
               <span class="id-cust">F-01</span>
