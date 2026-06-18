@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>PECO様 レシートCP｜仕様確認モックアップ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ===== BASIC AUTH OVERLAY ===== */
+#auth-overlay{position:fixed;inset:0;background:#1a1a2e;display:flex;align-items:center;justify-content:center;z-index:9999;}
+#auth-box{background:#fff;border-radius:12px;padding:36px 40px;width:320px;box-shadow:0 8px 32px rgba(0,0,0,0.3);}
+#auth-box h2{font-family:'Noto Sans JP',sans-serif;font-size:15px;font-weight:700;color:#333;margin-bottom:4px;}
+#auth-box p{font-size:11px;color:#888;margin-bottom:20px;}
+#auth-box input{width:100%;border:1px solid #ddd;border-radius:6px;padding:10px 12px;font-size:13px;outline:none;margin-bottom:12px;font-family:inherit;}
+#auth-box input:focus{border-color:#e87722;}
+#auth-box button{width:100%;background:#e87722;color:#fff;border:none;border-radius:6px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+#auth-box .err{color:#e53935;font-size:11px;margin-top:6px;display:none;}
+#auth-box .logo-line{font-size:10px;color:#aaa;text-align:center;margin-top:14px;}
+
+/* ===== BASE ===== */
+*{box-sizing:border-box;margin:0;padding:0;}
+body{margin:0;padding:0;font-family:'Noto Sans JP',sans-serif;}
+
+/* ① タイトルバー */
+#titlebar{
+  background:#fff;border-bottom:2px solid #e87722;
+  padding:0 20px;height:44px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 1px 4px rgba(0,0,0,.07);
+  font-family:"Noto Sans JP",sans-serif;
+  position:sticky;top:0;z-index:100;
+}
+#titlebar h1{font-size:13px;font-weight:700;color:#333;}
+#titlebar p{font-size:9px;color:#888;margin-top:1px;}
+.legend{display:flex;gap:12px;font-size:10px;align-items:center;}
+.legend-item{display:flex;align-items:center;gap:4px;}
+.lbox{width:11px;height:11px;border-radius:2px;flex-shrink:0;}
+.lbox.c{border:2px solid #e53935;background:#fff5f5;}
+.lbox.o{background:#fff;border:1px solid #ccc;}
+
+/* バッジ */
+.id-cust{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;border-radius:99px;padding:2px 7px;font-size:9px;font-weight:700;white-space:nowrap;}
+.id-std {background:#dcfce7;color:#166534;border:1px solid #86efac;border-radius:99px;padding:2px 7px;font-size:9px;font-weight:700;white-space:nowrap;}
+.id-reci{background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;border-radius:99px;padding:2px 7px;font-size:9px;font-weight:700;white-space:nowrap;}
+.id-ops {background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:99px;padding:2px 7px;font-size:9px;font-weight:700;white-space:nowrap;}
+
+/* カスタム赤枠 */
+.custom-mark{position:relative;border:2px solid #e53935 !important;border-radius:4px;background:#fff5f5 !important;}
+.custom-mark::before{content:"✏️ カスタム";position:absolute;top:-10px;right:4px;background:#fff5f5;color:#c62828;border:1px solid #e53935;font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;white-space:nowrap;z-index:10;}
+
+/* ② サマリーバー */
+#summary-bar{
+  background:#fff3e0;
+  border-top:2px solid #e87722;
+  border-bottom:2px solid #e87722;
+  font-family:"Noto Sans JP",sans-serif;
+}
+#summary-toggle{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:8px 20px;background:transparent;border:none;cursor:pointer;
+  font-family:"Noto Sans JP",sans-serif;
+}
+#summary-toggle-left{display:flex;align-items:center;gap:10px;}
+#summary-toggle-label{font-size:12px;font-weight:700;color:#333;}
+.stag{font-size:11px;font-weight:700;color:#e87722;}
+.summary-hint{border:1px solid #e87722;border-radius:99px;padding:1px 8px;color:#e87722;font-size:9px;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+#summary-toggle-arrow{background:#e87722;color:#fff;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:700;white-space:nowrap;}
+#summary-body{display:none;padding:16px 24px 20px;max-height:60vh;overflow-y:auto;}
+#summary-body.open{display:block;}
+
+/* サマリー内部スタイル */
+.sum-section{margin-bottom:16px;}
+.sum-h{font-size:11px;font-weight:700;color:#e87722;border-left:3px solid #e87722;padding-left:8px;margin-bottom:8px;}
+.sum-table{width:100%;border-collapse:collapse;font-size:11px;}
+.sum-table th{background:#f5f5f5;padding:5px 10px;text-align:left;color:#555;font-weight:700;border:1px solid #e0e0e0;}
+.sum-table td{padding:5px 10px;border:1px solid #e0e0e0;color:#333;vertical-align:top;}
+.plan-a{background:#e8f5e9;color:#2e7d32;font-weight:700;padding:2px 8px;border-radius:3px;}
+.plan-b{background:#fff3e0;color:#e65100;font-weight:700;padding:2px 8px;border-radius:3px;}
+.plan-c{background:#fce4ec;color:#880e4f;font-weight:700;padding:2px 8px;border-radius:3px;}
+
+/* ③ フロー図バー */
+#flowbar{
+  background:#fff;border-bottom:2px solid #e0e0e0;
+  padding:10px 20px 12px;
+  font-family:"Noto Sans JP",sans-serif;
+}
+#flowbar .ftitle{
+  font-size:12px;font-weight:700;color:#333;
+  border-left:4px solid #e87722;padding-left:8px;margin-bottom:10px;
+}
+.fnode{
+  background:#fff;border:1.5px solid #ccc;border-radius:8px;
+  padding:8px 12px;font-size:10px;font-weight:700;color:#333;
+  white-space:nowrap;text-align:center;min-width:90px;
+  flex-shrink:0;
+}
+.fnode.line-start{background:#e8f5e9;border-color:#4caf50;color:#2e7d32;}
+.fnode.line-ocr{background:#dbeafe;border-color:#3b82f6;color:#1e40af;}
+.fnode.line-win{background:#fff3e0;border-color:#e87722;color:#c45a00;}
+.fnode.line-prize{background:#fce4ec;border-color:#e91e63;color:#880e4f;}
+.fnode.line-grey{background:#f5f5f5;border-color:#bbb;color:#777;}
+.farrow{color:#aaa;font-size:14px;margin:0 4px;flex-shrink:0;}
+.fline-label{font-size:9px;color:#999;margin-top:2px;}
+
+/* ④ テーブルレイアウト */
+#panels-table{
+  width:100%;border-collapse:collapse;
+  table-layout:fixed;
+  font-family:"Noto Sans JP",sans-serif;font-size:12px;
+}
+#panels-table > tbody > tr > td{vertical-align:top;padding:0;}
+#td-left{width:320px;background:#f0f0f0;border-right:2px solid #e0e0e0;}
+#td-left-inner{overflow-y:auto;padding:14px 12px 48px;}
+#td-right{background:#fff;}
+#td-right-inner{overflow-y:auto;padding:14px 16px 48px;}
+
+/* グリッド */
+.grid{display:flex;flex-direction:column;align-items:center;gap:32px;}
+
+/* 画面wrap */
+.screen-wrap{display:flex;flex-direction:column;align-items:center;position:relative;}
+.screen-label{font-size:11px;color:#555;margin-top:8px;font-weight:700;}
+.screen-sub{font-size:10px;color:#888;margin-top:2px;text-align:center;}
+.screen-ids{position:absolute;top:0;right:-6px;display:flex;flex-direction:column;gap:3px;align-items:flex-end;z-index:20;}
+.screen-ids span{font-size:8px;font-weight:700;padding:2px 7px;border-radius:99px;box-shadow:0 1px 4px rgba(0,0,0,0.18);}
+
+/* phoneフレーム */
+.phone{width:280px;background:#fff;border-radius:36px;border:1.5px solid #ccc;box-shadow:0 4px 16px rgba(0,0,0,0.13);padding:10px;}
+.phone-inner{border-radius:28px;overflow:hidden;background:#fff;min-height:520px;display:flex;flex-direction:column;border:1px solid #e8e8e8;}
+.sb{display:flex;justify-content:space-between;padding:7px 16px 3px;font-size:9px;font-weight:700;color:#333;background:#fff;}
+
+/* UI部品 */
+.btn-orange{background:#e87722;color:#fff;border:none;border-radius:6px;width:100%;padding:11px;font-size:12px;font-weight:700;font-family:inherit;display:block;cursor:pointer;}
+.btn-outline{background:#fff;color:#555;border:1px solid #ccc;border-radius:6px;width:100%;padding:9px;font-size:11px;font-family:inherit;display:block;margin-top:6px;}
+.btn-green{background:#4caf50;color:#fff;border:none;border-radius:6px;width:100%;padding:10px;font-size:12px;font-weight:700;font-family:inherit;display:block;}
+.btn-line{background:#06c755;color:#fff;border:none;border-radius:6px;width:100%;padding:12px;font-size:13px;font-weight:700;font-family:inherit;}
+.ph-header{background:#e87722;color:#fff;padding:10px 14px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;}
+.ph-body{padding:12px 14px;flex:1;}
+.ph-form-label{font-size:10px;color:#888;margin-bottom:3px;}
+.ph-input{width:100%;border:1px solid #ddd;border-radius:5px;padding:8px 10px;font-size:11px;color:#333;background:#fafafa;margin-bottom:10px;}
+.tag-badge{display:inline-block;background:#e0f2f1;color:#00796b;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;margin:2px;}
+.receipt-img-box{width:100%;height:110px;background:#f0f0f0;border:2px dashed #ccc;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:10px;margin-bottom:10px;}
+.status-badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:9px;font-weight:700;}
+.status-pending{background:#fff3e0;color:#e65100;border:1px solid #ffcc80;}
+.status-ok{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;}
+.status-ng{background:#fce4ec;color:#880e4f;border:1px solid #f48fb1;}
+.status-win{background:#fff9c4;color:#f57f17;border:1px solid #fff176;}
+.win-card{background:linear-gradient(135deg,#ff8f00,#ffca28);border-radius:10px;padding:16px;text-align:center;margin-bottom:10px;}
+.win-card .win-title{font-size:16px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.2);}
+.win-card .win-sub{font-size:10px;color:rgba(255,255,255,.85);margin-top:3px;}
+.lose-card{background:#f5f5f5;border-radius:10px;padding:14px;text-align:center;margin-bottom:10px;border:1px solid #e0e0e0;}
+.dl-btn{background:#fff;border:2px solid #e87722;color:#e87722;border-radius:6px;padding:9px;font-size:11px;font-weight:700;width:100%;display:block;text-align:center;margin-top:8px;}
+.info-form-box{background:#fafafa;border:1px solid #e0e0e0;border-radius:8px;padding:10px;margin-bottom:10px;}
+
+/* 言語切替 */
+#lang-toggle{background:#555;color:#fff;border:none;border-radius:5px;padding:6px 12px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;}
+
+/* 工数テーブル */
+.kosu-h{font-size:12px;font-weight:700;color:#333;border-left:4px solid #e87722;padding-left:8px;margin-bottom:6px;}
+.kosu-sub{font-size:10px;color:#888;margin-bottom:12px;line-height:1.5;}
+.kosu-table{width:100%;border-collapse:collapse;font-size:11px;}
+.kosu-table th{background:#e87722;color:#fff;padding:8px 10px;text-align:left;white-space:nowrap;}
+.kosu-table td{padding:8px 10px;border-bottom:1px solid #f0f0f0;vertical-align:top;line-height:1.5;}
+.kosu-table tr:nth-child(even){background:#fafafa;}
+.diff-sm{background:#fef3c7;color:#92400e;font-size:9px;font-weight:700;padding:2px 8px;border-radius:99px;}
+.diff-md{background:#fee2e2;color:#991b1b;font-size:9px;font-weight:700;padding:2px 8px;border-radius:99px;}
+.diff-lg{background:#fce7f3;color:#9d174d;font-size:9px;font-weight:700;padding:2px 8px;border-radius:99px;}
+.diff-cfg{background:#dcfce7;color:#166534;font-size:9px;font-weight:700;padding:2px 8px;border-radius:99px;}
+.check-txt{font-size:10px;color:#e53935;line-height:1.5;}
+.q-tag{background:#fef9c3;border:1px solid #fde68a;border-radius:4px;padding:6px 10px;font-size:10px;color:#78350f;margin-top:4px;line-height:1.6;}
+.q-tag strong{display:block;color:#e87722;font-size:9px;margin-bottom:2px;}
+
+/* 見積サマリー */
+.est-box{background:#f9fafb;border:1px solid #e0e0e0;border-radius:8px;padding:12px;margin-top:16px;}
+.est-h{font-size:11px;font-weight:700;color:#333;margin-bottom:8px;border-left:3px solid #e87722;padding-left:7px;}
+.est-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f0f0;font-size:10px;}
+.est-row:last-child{border-bottom:none;font-weight:700;font-size:11px;padding-top:8px;margin-top:4px;}
+.est-plan{font-weight:700;margin-bottom:6px;font-size:11px;}
+
+/* 確認事項リスト */
+.q-list{margin-top:16px;}
+.q-list-h{font-size:11px;font-weight:700;color:#333;border-left:4px solid #f59e0b;padding-left:8px;margin-bottom:8px;}
+.q-item{display:flex;gap:8px;padding:6px 8px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;margin-bottom:6px;font-size:10px;color:#333;line-height:1.5;}
+.q-item::before{content:"❓";flex-shrink:0;}
+</style>
+</head>
+<body>
+
+<!-- ===== BASIC AUTH ===== -->
+<div id="auth-overlay">
+  <div id="auth-box">
+    <h2>🔐 アクセス認証</h2>
+    <p>PECO様 仕様確認資料 — パスワードを入力してください</p>
+    <input type="password" id="auth-pw" placeholder="パスワード" onkeydown="if(event.key==='Enter')checkAuth()">
+    <button onclick="checkAuth()">確認</button>
+    <div class="err" id="auth-err">パスワードが違います</div>
+    <div class="logo-line">WorldWideSystem © 2026</div>
+  </div>
+</div>
+<script>
+(function(){
+  var PASS = 'test';
+  var KEY  = 'wws_auth_peco';
+  if(sessionStorage.getItem(KEY)==='ok'){
+    document.getElementById('auth-overlay').style.display='none';
+  }
+})();
+function checkAuth(){
+  var v = document.getElementById('auth-pw').value;
+  if(v==='test'){
+    sessionStorage.setItem('wws_auth_peco','ok');
+    document.getElementById('auth-overlay').style.display='none';
+  } else {
+    document.getElementById('auth-err').style.display='block';
+    document.getElementById('auth-pw').value='';
+    document.getElementById('auth-pw').focus();
+  }
+}
+</script>
+
+<!-- ===== ① タイトルバー ===== -->
+<div id="titlebar">
+  <div>
+    <h1 data-i18n="PECO様 レシートCP｜仕様確認モックアップ">PECO様 レシートCP｜仕様確認モックアップ</h1>
+    <p data-i18n="SmartRecieco WEB版 + Smart Kuji（インスタントウィン）｜修正箇所のみ赤枠表示">SmartRecieco WEB版 + Smart Kuji（インスタントウィン）｜修正箇所のみ赤枠表示</p>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+    <span class="id-reci" data-i18n="SmartRecieco WEB版">SmartRecieco WEB版</span>
+    <span class="id-std" data-i18n="Smart Kuji">Smart Kuji</span>
+    <span class="id-cust" data-i18n="インスタントウィン">インスタントウィン</span>
+    <div style="width:1px;height:20px;background:#e0e0e0;margin:0 4px;"></div>
+    <div class="legend">
+      <div class="legend-item"><div class="lbox c"></div><span data-i18n="✏️ カスタム変更箇所">✏️ カスタム変更箇所</span></div>
+      <div class="legend-item"><div class="lbox o"></div><span data-i18n="標準UIそのまま">標準UIそのまま</span></div>
+    </div>
+    <div style="width:1px;height:20px;background:#e0e0e0;margin:0 4px;"></div>
+    <button id="lang-toggle" onclick="toggleLang()">🌐 English</button>
+  </div>
+</div>
+
+<!-- ===== ② 案件サマリー ===== -->
+<div id="summary-bar">
+  <button id="summary-toggle" onclick="toggleSummary()">
+    <div id="summary-toggle-left">
+      <div id="summary-toggle-label"><span class="stag">📋 案件サマリー</span>　株式会社PECO様｜レシートCP ／ 構想段階</div>
+      <span class="summary-hint">▼ クリックして開く</span>
+    </div>
+    <span id="summary-toggle-arrow">▼ 開く</span>
+  </button>
+  <div id="summary-body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <div class="sum-section">
+          <div class="sum-h">1. 案件の背景</div>
+          <table class="sum-table">
+            <tr><th>クライアント</th><td>株式会社PECO様</td></tr>
+            <tr><th>目的</th><td>売上拡大・購買促進</td></tr>
+            <tr><th>キャンペーン形式</th><td>商品購入レシート＋インスタントウィン</td></tr>
+            <tr><th>認証方式</th><td>LINEログイン or WEB版（メールアドレス）※未定</td></tr>
+            <tr><th>CP期間</th><td>2〜3ヶ月（2027年予定）</td></tr>
+            <tr><th>想定応募数</th><td>800枚以上／月</td></tr>
+            <tr><th>サーバープラン</th><td>共用</td></tr>
+          </table>
+        </div>
+        <div class="sum-section">
+          <div class="sum-h">2. 提案プラン比較</div>
+          <table class="sum-table">
+            <tr><th></th><th><span class="plan-a">プランA</span></th><th><span class="plan-b">プランB</span></th><th><span class="plan-c">プランC</span></th></tr>
+            <tr><td>税込合計</td><td><strong>220万円</strong></td><td><strong>199.1万円</strong></td><td><strong>115.5万円</strong></td></tr>
+            <tr><td>賞品画像表示</td><td>あり（+3万円）</td><td>なし</td><td>なし</td></tr>
+            <tr><td>抽選ロジック設定</td><td>各賞ごと</td><td>各賞ごと</td><td>基本のみ</td></tr>
+            <tr><td>監視・サポート</td><td>2ヶ月分</td><td>なし</td><td>なし</td></tr>
+            <tr><td>LINE公式アカウント構築</td><td>+10万円</td><td>なし</td><td>なし</td></tr>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="sum-section">
+          <div class="sum-h">3. 未確認事項（回答待ち）</div>
+          <table class="sum-table">
+            <tr><th>No.</th><th>カテゴリ</th><th>確認内容</th></tr>
+            <tr><td>1</td><td>応募方式</td><td>LINE版 / WEB版どちらか</td></tr>
+            <tr><td>2</td><td>レシート</td><td>対象店舗DBの事前登録要否</td></tr>
+            <tr><td>3</td><td>レシート</td><td>対象商品のレシート表記（店舗ごとの揺らぎ）</td></tr>
+            <tr><td>4</td><td>応募条件</td><td>レシート有効期間と応募期間の一致</td></tr>
+            <tr><td>5</td><td>不正対策</td><td>オンラインレシート（注文画面）の取り扱い</td></tr>
+          </table>
+        </div>
+        <div class="sum-section">
+          <div class="sum-h">4. 景品・当選設計（構想段階）</div>
+          <table class="sum-table">
+            <tr><th>景品</th><th>形式</th><th>備考</th></tr>
+            <tr><td>オリジナル壁紙</td><td>デジタルDL</td><td>当選者へURL配信</td></tr>
+            <tr><td>デジタルスタンプ</td><td>デジタルDL</td><td>同上</td></tr>
+            <tr><td>ぬいぐるみ</td><td>郵送（検討中）</td><td>個人情報フォーム必要→F-02</td></tr>
+          </table>
+        </div>
+        <div class="sum-section">
+          <div class="sum-h">5. カスタム開発が必要な箇所</div>
+          <table class="sum-table">
+            <tr><th>ID</th><th>機能名</th><th>備考</th></tr>
+            <tr><td><span class="id-cust">F-01</span></td><td>応募フォーム賞品画像表示</td><td>プランAのみ（+3万円）</td></tr>
+            <tr><td><span class="id-cust">F-02</span></td><td>郵送用個人情報フォーム</td><td>ぬいぐるみ当選時のみ</td></tr>
+            <tr><td><span class="id-cust">F-03</span></td><td>当選演出画面（インスタントウィン）</td><td>ガラポン/トランプ/スロット型</td></tr>
+            <tr><td><span class="id-ops">B-01</span></td><td>タグ審査条件設定</td><td>対象商品リスト登録（設定作業）</td></tr>
+            <tr><td><span class="id-ops">B-02</span></td><td>重複レシートチェック設定</td><td>1時間後照合バッチ設定</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- 6章：成果物一覧 非表示 -->
+    <div style="display:none;">
+      <div class="sum-h">6. 成果物一覧</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ③ ユーザーフロー図 ===== -->
+<div id="flowbar">
+  <div class="ftitle" data-i18n="ユーザーフロー図">ユーザーフロー図</div>
+  <div style="overflow-x:auto;">
+    <div style="display:flex;align-items:flex-start;gap:0;min-width:1100px;padding-bottom:4px;">
+
+      <!-- 1: 商品購入 -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="fnode line-start" data-i18n="①商品購入">①商品購入</div>
+        <div class="fline-label" data-i18n="対象商品">対象商品</div>
+      </div>
+      <div class="farrow">→</div>
+
+      <!-- 2: ログイン -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="fnode" data-i18n="②LINEログイン／メール">②LINEログイン<br>／メール</div>
+        <div class="fline-label" data-i18n="認証方式未定">認証方式未定</div>
+      </div>
+      <div class="farrow">→</div>
+
+      <!-- 3: レシートアップ -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="fnode line-ocr" data-i18n="③レシート画像アップ">③レシート<br>画像アップ</div>
+        <div class="fline-label" data-i18n="JPG/PNG 10MB以内">JPG/PNG 10MB</div>
+      </div>
+      <div class="farrow">→</div>
+
+      <!-- 4: OCR審査 -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="fnode line-ocr" data-i18n="④OCR自動審査">④OCR<br>自動審査</div>
+        <div class="fline-label" data-i18n="即時判定">即時判定</div>
+      </div>
+      <div class="farrow">→</div>
+
+      <!-- 5: 分岐 -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="fnode" style="background:#e8eaf6;border-color:#5c6bc0;color:#283593;" data-i18n="⑤審査結果分岐">⑤審査結果<br>分岐</div>
+        <div class="fline-label" data-i18n="OK / NG / 重複">OK / NG / 重複</div>
+      </div>
+      <div class="farrow">→</div>
+
+      <!-- 6: インスタントウィン -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="fnode line-win" data-i18n="⑥インスタントウィン抽選">⑥インスタント<br>ウィン抽選</div>
+        <div class="fline-label" data-i18n="Smart Kuji">Smart Kuji</div>
+      </div>
+      <div class="farrow">→</div>
+
+      <!-- 7: 当落分岐 -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="fnode" style="background:#e8eaf6;border-color:#5c6bc0;color:#283593;" data-i18n="⑦当落分岐">⑦当落分岐</div>
+        <div class="fline-label" data-i18n="当選 / ハズレ">当選 / ハズレ</div>
+      </div>
+      <div class="farrow">→</div>
+
+      <!-- 8a: デジタルギフト -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="fnode line-prize" data-i18n="⑧当選：デジタルDL">⑧当選：<br>デジタルDL</div>
+        <div class="fline-label" data-i18n="壁紙・スタンプ">壁紙・スタンプ</div>
+      </div>
+
+      <div style="margin:0 6px;font-size:11px;color:#aaa;align-self:center;">or</div>
+
+      <!-- 8b: ぬいぐるみ -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="fnode line-prize custom-mark" data-i18n="⑧当選：郵送">⑧当選：<br>郵送申請</div>
+        <div class="fline-label" data-i18n="ぬいぐるみ（検討中）">ぬいぐるみ（検討中）</div>
+      </div>
+
+      <div class="farrow" style="margin-left:12px;">→</div>
+
+      <!-- 9: ハズレ -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="fnode line-grey" data-i18n="⑨ハズレ">⑨ハズレ</div>
+        <div class="fline-label" data-i18n="再応募可">再応募可</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== ④ 左右パネル ===== -->
+<table id="panels-table">
+  <tbody><tr>
+
+    <!-- 左：画面フロー（320px固定） -->
+    <td id="td-left">
+      <div id="td-left-inner">
+        <div class="grid">
+
+          <!-- ===== 画面① ログイン ===== -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:41</span><span>▲◀🔋</span></div>
+                <div class="ph-header">🐾 <span data-i18n="PECO レシートキャンペーン">PECO レシートキャンペーン</span></div>
+                <div class="ph-body" style="padding:16px;">
+                  <div style="text-align:center;margin-bottom:16px;">
+                    <div style="width:60px;height:60px;background:#ffe0b2;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:28px;">🐾</div>
+                    <div style="font-size:13px;font-weight:700;color:#333;" data-i18n="PECO レシートCP">PECO レシートCP</div>
+                    <div style="font-size:10px;color:#888;margin-top:3px;" data-i18n="対象商品を購入してレシートで応募しよう！">対象商品を購入してレシートで応募しよう！</div>
+                  </div>
+                  <button class="btn-line" data-i18n="LINEでログイン">LINEでログイン</button>
+                  <div style="text-align:center;margin:8px 0;font-size:10px;color:#aaa;" data-i18n="または">または</div>
+                  <div class="ph-form-label" data-i18n="メールアドレス">メールアドレス</div>
+                  <input class="ph-input" placeholder="example@email.com" readonly>
+                  <div class="ph-form-label" data-i18n="パスワード">パスワード</div>
+                  <input class="ph-input" type="password" placeholder="••••••••" readonly>
+                  <button class="btn-orange" data-i18n="ログイン">ログイン</button>
+                  <div style="text-align:center;margin-top:8px;font-size:10px;color:#888;" data-i18n="アカウントをお持ちでない方はこちら">アカウントをお持ちでない方はこちら</div>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label" data-i18n="① ログイン画面">① ログイン画面</div>
+            <div class="screen-sub" data-i18n="LINE版 or WEB版（回答待ち）">LINE版 or WEB版（回答待ち）</div>
+          </div>
+
+          <!-- ===== 画面② レシートアップ ===== -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:41</span><span>▲◀🔋</span></div>
+                <div class="ph-header">📸 <span data-i18n="レシートを送る">レシートを送る</span></div>
+                <div class="ph-body">
+                  <div style="font-size:10px;color:#555;margin-bottom:10px;line-height:1.6;" data-i18n="対象商品が記載されたレシートをアップロードしてください。">対象商品が記載されたレシートをアップロードしてください。</div>
+                  <div class="receipt-img-box" data-i18n="📷 タップして撮影 or 画像を選択">📷 タップして撮影<br>or 画像を選択</div>
+                  <div style="font-size:9px;color:#aaa;margin-bottom:10px;" data-i18n="※JPG・PNG形式、10MB以内">※JPG・PNG形式、10MB以内</div>
+                  <div style="font-size:10px;font-weight:700;margin-bottom:6px;" data-i18n="応募回数">応募回数</div>
+                  <div style="background:#e8f5e9;border-radius:6px;padding:8px 12px;font-size:12px;margin-bottom:10px;">
+                    <span data-i18n="今月">今月</span> <strong>3</strong> <span data-i18n="回応募済み">回応募済み</span>
+                  </div>
+                  <button class="btn-orange" data-i18n="応募する">応募する</button>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label" data-i18n="② レシートアップロード">② レシートアップロード</div>
+            <div class="screen-sub" data-i18n="SmartRecieco 標準UI">SmartRecieco 標準UI</div>
+          </div>
+
+          <!-- ===== 画面③ 審査中 / 応募完了 ===== -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:41</span><span>▲◀🔋</span></div>
+                <div class="ph-header">✅ <span data-i18n="応募完了">応募完了</span></div>
+                <div class="ph-body" style="text-align:center;padding-top:20px;">
+                  <div style="font-size:32px;margin-bottom:10px;">🎉</div>
+                  <div style="font-size:13px;font-weight:700;margin-bottom:6px;" data-i18n="ご応募ありがとうございます！">ご応募ありがとうございます！</div>
+                  <div style="font-size:10px;color:#888;margin-bottom:16px;" data-i18n="審査完了後、即時抽選を行います。">審査完了後、即時抽選を行います。</div>
+                  <div style="background:#fff3e0;border-radius:8px;padding:12px;margin-bottom:16px;text-align:left;">
+                    <div style="font-size:10px;font-weight:700;margin-bottom:4px;" data-i18n="応募履歴">応募履歴</div>
+                    <div style="display:flex;justify-content:space-between;font-size:10px;padding:4px 0;border-bottom:1px solid #ffe0b2;">
+                      <span data-i18n="2027/01/06 14:32">2027/01/06 14:32</span>
+                      <span class="status-badge status-pending" data-i18n="審査中">審査中</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:10px;padding:4px 0;">
+                      <span data-i18n="2026/12/20 10:15">2026/12/20 10:15</span>
+                      <span class="status-badge status-ok" data-i18n="審査OK">審査OK</span>
+                    </div>
+                  </div>
+                  <button class="btn-outline" data-i18n="抽選する（審査OK後）">抽選する（審査OK後）</button>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label" data-i18n="③ 応募完了 / 応募履歴">③ 応募完了 / 応募履歴</div>
+            <div class="screen-sub" data-i18n="即時審査 → 審査OK後に抽選解放">即時審査 → 審査OK後に抽選解放</div>
+          </div>
+
+          <!-- ===== 画面④ インスタントウィン演出 ===== -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:41</span><span>▲◀🔋</span></div>
+                <div class="ph-header custom-mark">🎰 <span data-i18n="くじを引く">くじを引く</span></div>
+                <div class="ph-body" style="text-align:center;padding-top:24px;">
+                  <div style="font-size:11px;color:#888;margin-bottom:16px;" data-i18n="タップして運試し！">タップして運試し！</div>
+                  <!-- スロット演出モック -->
+                  <div style="width:200px;height:100px;background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:12px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;gap:8px;border:2px solid #e87722;">
+                    <div style="width:48px;height:68px;background:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:28px;">🐾</div>
+                    <div style="width:48px;height:68px;background:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:28px;">⭐</div>
+                    <div style="width:48px;height:68px;background:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:28px;">🐾</div>
+                  </div>
+                  <div style="font-size:10px;color:#888;margin-bottom:12px;" data-i18n="ガラポン / トランプ / スロット型選択可">ガラポン / トランプ / スロット型選択可</div>
+                  <button class="btn-orange" data-i18n="くじを引く！">くじを引く！</button>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label" data-i18n="④ インスタントウィン演出">④ インスタントウィン演出</div>
+            <div class="screen-sub" data-i18n="Smart Kuji カスタマイズアニメーション">Smart Kuji カスタマイズアニメーション</div>
+            <div class="screen-ids">
+              <span class="id-cust">F-03</span>
+            </div>
+          </div>
+
+          <!-- ===== 画面⑤ 当選画面（デジタルギフト） ===== -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:41</span><span>▲◀🔋</span></div>
+                <div class="ph-header" style="background:#ffd600;color:#333;">🎊 <span data-i18n="当選！">当選！</span></div>
+                <div class="ph-body" style="padding-top:12px;">
+                  <div class="win-card">
+                    <div class="win-title" data-i18n="🎉 おめでとうございます！">🎉 おめでとうございます！</div>
+                    <div class="win-sub" data-i18n="オリジナル壁紙が当たりました">オリジナル壁紙が当たりました</div>
+                  </div>
+                  <div style="background:#fff9c4;border-radius:8px;padding:10px;margin-bottom:10px;font-size:10px;color:#555;" data-i18n="以下のボタンから壁紙をダウンロードしてください。">
+                    以下のボタンから壁紙をダウンロードしてください。
+                  </div>
+                  <div class="dl-btn" data-i18n="📥 壁紙をダウンロード">📥 壁紙をダウンロード</div>
+                  <div class="dl-btn" style="margin-top:6px;" data-i18n="💬 スタンプをダウンロード">💬 スタンプをダウンロード</div>
+                  <div style="font-size:9px;color:#999;margin-top:10px;text-align:center;" data-i18n="※ダウンロードURLは後日メールでも送付されます">※ダウンロードURLは後日メールでも送付されます</div>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label" data-i18n="⑤ 当選画面（デジタルギフト）">⑤ 当選画面（デジタルギフト）</div>
+            <div class="screen-sub" data-i18n="壁紙・スタンプDL">壁紙・スタンプDL</div>
+          </div>
+
+          <!-- ===== 画面⑥ 当選画面（ぬいぐるみ郵送） ===== -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:41</span><span>▲◀🔋</span></div>
+                <div class="ph-header" style="background:#ffd600;color:#333;" >🧸 <span data-i18n="ぬいぐるみ当選！">ぬいぐるみ当選！</span></div>
+                <div class="ph-body">
+                  <div class="win-card" style="background:linear-gradient(135deg,#ab47bc,#8e24aa);">
+                    <div class="win-title" data-i18n="🧸 ぬいぐるみ当選！">🧸 ぬいぐるみ当選！</div>
+                    <div class="win-sub" data-i18n="お届け先をご入力ください">お届け先をご入力ください</div>
+                  </div>
+                  <div class="info-form-box custom-mark">
+                    <div class="ph-form-label" data-i18n="お名前（必須）">お名前（必須）</div>
+                    <input class="ph-input" placeholder="山田 太郎" readonly>
+                    <div class="ph-form-label" data-i18n="郵便番号（必須）">郵便番号（必須）</div>
+                    <input class="ph-input" placeholder="000-0000" readonly>
+                    <div class="ph-form-label" data-i18n="住所（必須）">住所（必須）</div>
+                    <input class="ph-input" placeholder="東京都..." readonly>
+                    <div class="ph-form-label" data-i18n="電話番号（必須）">電話番号（必須）</div>
+                    <input class="ph-input" placeholder="090-0000-0000" readonly>
+                  </div>
+                  <button class="btn-orange" data-i18n="送付先を申請する">送付先を申請する</button>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label" data-i18n="⑥ 当選画面（ぬいぐるみ郵送申請）">⑥ 当選画面（郵送申請）</div>
+            <div class="screen-sub" data-i18n="個人情報入力フォーム（検討中）">個人情報入力フォーム（検討中）</div>
+            <div class="screen-ids">
+              <span class="id-cust">F-02</span>
+            </div>
+          </div>
+
+          <!-- ===== 画面⑦ ハズレ ===== -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:41</span><span>▲◀🔋</span></div>
+                <div class="ph-header" style="background:#9e9e9e;color:#fff;">😢 <span data-i18n="残念...">残念...</span></div>
+                <div class="ph-body" style="text-align:center;padding-top:24px;">
+                  <div class="lose-card">
+                    <div style="font-size:28px;margin-bottom:8px;">😢</div>
+                    <div style="font-size:13px;font-weight:700;color:#555;" data-i18n="今回はハズレでした">今回はハズレでした</div>
+                    <div style="font-size:10px;color:#888;margin-top:4px;" data-i18n="また商品を購入してチャレンジしてみてください！">また商品を購入してチャレンジしてみてください！</div>
+                  </div>
+                  <button class="btn-outline" data-i18n="応募履歴を見る">応募履歴を見る</button>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label" data-i18n="⑦ ハズレ画面">⑦ ハズレ画面</div>
+            <div class="screen-sub" data-i18n="Smart Kuji 標準UI">Smart Kuji 標準UI</div>
+          </div>
+
+          <!-- ===== 画面⑧ 応募フォーム（賞品画像あり） ===== -->
+          <div class="screen-wrap">
+            <div class="phone">
+              <div class="phone-inner">
+                <div class="sb"><span>9:41</span><span>▲◀🔋</span></div>
+                <div class="ph-header">🎁 <span data-i18n="景品ラインナップ">景品ラインナップ</span></div>
+                <div class="ph-body custom-mark">
+                  <div style="font-size:10px;color:#555;margin-bottom:10px;" data-i18n="当選確率は各景品で異なります">当選確率は各景品で異なります</div>
+                  <!-- 賞品一覧 -->
+                  <div style="display:flex;gap:8px;margin-bottom:10px;">
+                    <div style="flex:1;background:#fff3e0;border-radius:8px;padding:8px;text-align:center;border:1px solid #ffe0b2;">
+                      <div style="font-size:20px;margin-bottom:3px;">🖼️</div>
+                      <div style="font-size:9px;font-weight:700;" data-i18n="オリジナル壁紙">オリジナル壁紙</div>
+                      <div style="font-size:8px;color:#888;" data-i18n="デジタルDL">デジタルDL</div>
+                    </div>
+                    <div style="flex:1;background:#e8f5e9;border-radius:8px;padding:8px;text-align:center;border:1px solid #c8e6c9;">
+                      <div style="font-size:20px;margin-bottom:3px;">💬</div>
+                      <div style="font-size:9px;font-weight:700;" data-i18n="デジタルスタンプ">デジタルスタンプ</div>
+                      <div style="font-size:8px;color:#888;" data-i18n="デジタルDL">デジタルDL</div>
+                    </div>
+                    <div style="flex:1;background:#fce4ec;border-radius:8px;padding:8px;text-align:center;border:1px solid #f8bbd0;">
+                      <div style="font-size:20px;margin-bottom:3px;">🧸</div>
+                      <div style="font-size:9px;font-weight:700;" data-i18n="ぬいぐるみ">ぬいぐるみ</div>
+                      <div style="font-size:8px;color:#888;" data-i18n="郵送（検討中）">郵送（検討中）</div>
+                    </div>
+                  </div>
+                  <div style="font-size:9px;color:#e53935;margin-bottom:10px;" data-i18n="※プランAのみ：賞品画像表示機能（+3万円）">※プランAのみ：賞品画像表示機能（+3万円）</div>
+                  <button class="btn-orange" data-i18n="くじを引く！">くじを引く！</button>
+                </div>
+              </div>
+            </div>
+            <div class="screen-label" data-i18n="⑧ 賞品画像表示（プランAオプション）">⑧ 賞品画像表示（プランA）</div>
+            <div class="screen-sub" data-i18n="応募フォームに景品画像を追加">応募フォームに景品画像を追加</div>
+            <div class="screen-ids">
+              <span class="id-cust">F-01</span>
+            </div>
+          </div>
+
+        </div><!-- /grid -->
+      </div><!-- /td-left-inner -->
+    </td><!-- /td-left -->
+
+    <!-- 右：工数算定 -->
+    <td id="td-right">
+      <div id="td-right-inner">
+        <div class="kosu-h" data-i18n="工数算定依頼ポイント">工数算定依頼ポイント</div>
+        <div class="kosu-sub" data-i18n="赤枠箇所に対応するカスタム開発要件。標準機能・管理画面設定のみで対応できる箇所は含まない。">赤枠箇所に対応するカスタム開発要件。標準機能・管理画面設定のみで対応できる箇所は含まない。</div>
+
+        <div style="overflow-x:auto;">
+        <table class="kosu-table">
+          <thead>
+            <tr>
+              <th style="width:8%;">ID</th>
+              <th style="width:8%;" data-i18n="区分">区分</th>
+              <th style="width:18%;" data-i18n="機能名">機能名</th>
+              <th style="width:36%;" data-i18n="要件概要">要件概要</th>
+              <th style="width:12%;text-align:center;" data-i18n="難易度">難易度</th>
+              <th style="width:18%;" data-i18n="確認事項">確認事項</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="id-cust">F-01</span></td>
+              <td><span style="background:#dbeafe;color:#1d4ed8;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;" data-i18n="フロント">フロント</span></td>
+              <td style="font-weight:600;" data-i18n="応募フォーム賞品画像表示">応募フォーム<br>賞品画像表示</td>
+              <td data-i18n="テキストのみのデフォルト表示に対し、壁紙・スタンプ・ぬいぐるみの画像をカード形式で追加表示。プランAのみ採用（+3万円）。">テキストのみのデフォルト表示に対し、壁紙・スタンプ・ぬいぐるみの画像をカード形式で追加表示。プランAのみ採用（+3万円）。</td>
+              <td style="text-align:center;"><span class="diff-sm" data-i18n="小">小</span></td>
+              <td class="check-txt" data-i18n="応募フォームの賞品画像エリアのカスタマイズ可能範囲を確認">応募フォームの賞品画像エリアのカスタマイズ範囲を確認</td>
+            </tr>
+            <tr>
+              <td><span class="id-cust">F-02</span></td>
+              <td><span style="background:#dbeafe;color:#1d4ed8;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;" data-i18n="フロント">フロント</span></td>
+              <td style="font-weight:600;" data-i18n="郵送用個人情報入力フォーム">郵送用<br>個人情報フォーム</td>
+              <td data-i18n="ぬいぐるみ当選時のみ表示する住所・氏名・電話番号入力フォーム。入力データをWWS事務局に転送し、発送手配を行う。">ぬいぐるみ当選時のみ表示する住所・氏名・電話番号入力フォーム。入力データをWWS事務局に転送し、発送手配を行う。</td>
+              <td style="text-align:center;"><span class="diff-md" data-i18n="小〜中">小〜中</span></td>
+              <td class="check-txt" data-i18n="ぬいぐるみ景品を正式採用するか確認。当選後のフォーム表示タイミング（即時 or メール誘導）を確認。">ぬいぐるみ景品の正式採用確認。当選後フォーム表示タイミング（即時 or メール誘導）を確認。</td>
+            </tr>
+            <tr>
+              <td><span class="id-cust">F-03</span></td>
+              <td><span style="background:#dbeafe;color:#1d4ed8;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;" data-i18n="フロント">フロント</span></td>
+              <td style="font-weight:600;" data-i18n="インスタントウィン演出カスタマイズ">インスタントウィン<br>演出カスタマイズ</td>
+              <td data-i18n="Smart Kuji標準の演出（ガラポン・トランプ・スロット）を採用するか、PECO様ブランドに合わせたオリジナルアニメーションを制作するかを選択。">Smart Kuji標準演出（ガラポン・トランプ・スロット）を採用するか、PECOブランドのオリジナルアニメーションを制作するかを選択。</td>
+              <td style="text-align:center;"><span class="diff-md" data-i18n="中">中</span></td>
+              <td class="check-txt" data-i18n="オリジナルアニメーション採用の場合、別途見積もりが必要。標準演出でよければ追加費用なし。">オリジナルアニメーション採用の場合、別途見積もり必要。標準演出なら追加費用なし。</td>
+            </tr>
+            <tr>
+              <td><span class="id-ops">B-01</span></td>
+              <td><span style="background:#fef3c7;color:#92400e;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;" data-i18n="設定作業">設定作業</span></td>
+              <td style="font-weight:600;" data-i18n="タグ審査条件設定">タグ審査<br>条件設定</td>
+              <td data-i18n="対象商品名（レシート表記）ごとにOCR審査条件をタグとして登録。表記ゆらぎ対応のため、店舗ごとの商品名バリエーションを事前収集・登録する。">対象商品名（レシート表記）ごとにOCR審査条件をタグとして登録。店舗ごとの商品名バリエーションを事前収集・登録する。</td>
+              <td style="text-align:center;"><span class="diff-cfg" data-i18n="設定のみ">設定のみ</span></td>
+              <td class="check-txt" data-i18n="対象商品リストと各店舗でのレシート表記を事前にPECO様から入手が必要。">対象商品リストと各店舗でのレシート表記をPECO様から事前入手が必要。</td>
+            </tr>
+            <tr>
+              <td><span class="id-ops">B-02</span></td>
+              <td><span style="background:#fef3c7;color:#92400e;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;" data-i18n="設定作業">設定作業</span></td>
+              <td style="font-weight:600;" data-i18n="重複レシートチェック設定">重複レシート<br>チェック設定</td>
+              <td data-i18n="同一レシートの複数応募を防止するため、重複チェックバッチを設定。同一Email+同一レシートは即時防御、異なるEmailでの同一レシートは1時間後に照合してNGとする。">同一レシートの複数応募を防止。同一Email+同一レシートは即時防御。異なるEmailでの同一レシートは1時間後に照合してNGとする。</td>
+              <td style="text-align:center;"><span class="diff-cfg" data-i18n="設定のみ">設定のみ</span></td>
+              <td class="check-txt" data-i18n="オンラインレシート（注文画面）の取り扱いルールをPECO様に確認（確認事項No.5）。">オンラインレシートの取り扱いルールをPECO様に確認（確認事項No.5）。</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+
+        <!-- 事前確認事項 -->
+        <div class="q-list">
+          <div class="q-list-h" data-i18n="🔴 事前確認事項（PECO様回答待ち）">🔴 事前確認事項（PECO様回答待ち）</div>
+          <div class="q-item"><span data-i18n="LINE版 / WEB版どちらで実施するか？（WEB版はメールアドレスのため不正リスクが高い）">LINE版 / WEB版どちらで実施するか？（WEB版はメールアドレスのため不正リスクが高い）</span></div>
+          <div class="q-item"><span data-i18n="ぬいぐるみ景品は正式採用か？（郵送フォームF-02の開発可否が変わる）">ぬいぐるみ景品は正式採用か？（郵送フォームF-02の開発可否が変わる）</span></div>
+          <div class="q-item"><span data-i18n="対象商品名の各店舗でのレシート表記を提供いただけるか？（タグ審査条件B-01設定に必要）">対象商品名の各店舗でのレシート表記を提供いただけるか？（タグ審査条件B-01設定に必要）</span></div>
+          <div class="q-item"><span data-i18n="オンラインレシート（注文完了画面）は受け付けるか？不正防止ルールを確認したい。">オンラインレシート（注文完了画面）は受け付けるか？不正防止ルールを確認したい。</span></div>
+          <div class="q-item"><span data-i18n="インスタントウィン演出は標準（ガラポン/スロット等）か、オリジナルアニメーションか？">インスタントウィン演出は標準（ガラポン/スロット等）か、オリジナルアニメーションか？</span></div>
+        </div>
+
+        <!-- 見積サマリー -->
+        <div class="est-box">
+          <div class="est-h" data-i18n="見積サマリー（税込）">見積サマリー（税込）</div>
+          <div class="est-plan"><span class="plan-a">プランA（推奨）</span></div>
+          <div class="est-row"><span data-i18n="SmartRecieco初期費用（LINEログイン含む）">SmartRecieco初期費用（LINEログイン含む）</span><span>770,000円</span></div>
+          <div class="est-row"><span data-i18n="Smart Kuji + カスタマイズ">Smart Kuji + カスタマイズ</span><span>418,000円</span></div>
+          <div class="est-row"><span data-i18n="運用・サポート・LINE構築">運用・サポート・LINE構築</span><span>286,000円</span></div>
+          <div class="est-row"><span data-i18n="賞品画像オプション">賞品画像オプション</span><span>33,000円</span></div>
+          <div class="est-row"><span data-i18n="全体テスト">全体テスト</span><span>110,000円</span></div>
+          <div class="est-row"><span data-i18n="合計（税込）">合計（税込）</span><span style="color:#e87722;">2,200,000円</span></div>
+        </div>
+
+      </div><!-- /td-right-inner -->
+    </td><!-- /td-right -->
+
+  </tr></tbody>
+</table>
+
+<!-- ===== JS ===== -->
+<script>
+/* サマリー開閉 */
+function toggleSummary(){
+  var body  = document.getElementById('summary-body');
+  var arrow = document.getElementById('summary-toggle-arrow');
+  var hint  = document.querySelector('.summary-hint');
+  var isOpen = body.classList.contains('open');
+  if(isOpen){
+    body.classList.remove('open');
+    arrow.textContent = '▼ 開く';
+    if(hint) hint.textContent = '▼ クリックして開く';
+  } else {
+    body.classList.add('open');
+    arrow.textContent = '▲ 閉じる';
+    if(hint) hint.textContent = '▲ クリックして閉じる';
+  }
+}
+
+/* 言語切替 */
+var TRANS = {
+  "PECO様 レシートCP｜仕様確認モックアップ": "PECO Receipt CP｜Spec Mockup",
+  "SmartRecieco WEB版 + Smart Kuji（インスタントウィン）｜修正箇所のみ赤枠表示": "SmartRecieco WEB + Smart Kuji (Instant Win) | Custom areas in red",
+  "SmartRecieco WEB版": "SmartRecieco WEB",
+  "インスタントウィン": "Instant Win",
+  "✏️ カスタム変更箇所": "✏️ Custom",
+  "標準UIそのまま": "Standard UI",
+  "ユーザーフロー図": "User Flow Diagram",
+  "①商品購入": "① Purchase",
+  "②LINEログイン／メール": "② LINE/Email Login",
+  "認証方式未定": "Auth TBD",
+  "③レシート画像アップ": "③ Upload Receipt",
+  "JPG/PNG 10MB以内": "JPG/PNG 10MB",
+  "④OCR自動審査": "④ OCR Review",
+  "即時判定": "Instant",
+  "⑤審査結果分岐": "⑤ Review Branch",
+  "OK / NG / 重複": "OK / NG / Duplicate",
+  "⑥インスタントウィン抽選": "⑥ Instant Win",
+  "⑦当落分岐": "⑦ Win/Lose Branch",
+  "当選 / ハズレ": "Win / Lose",
+  "⑧当選：デジタルDL": "⑧ Win: Digital DL",
+  "壁紙・スタンプ": "Wallpaper/Stamp",
+  "⑧当選：郵送": "⑧ Win: Postal",
+  "ぬいぐるみ（検討中）": "Stuffed toy (TBD)",
+  "⑨ハズレ": "⑨ Lose",
+  "再応募可": "Re-apply OK",
+  "PECO レシートキャンペーン": "PECO Receipt Campaign",
+  "LINEでログイン": "Login with LINE",
+  "または": "or",
+  "メールアドレス": "Email Address",
+  "パスワード": "Password",
+  "ログイン": "Login",
+  "アカウントをお持ちでない方はこちら": "Register here",
+  "① ログイン画面": "① Login Screen",
+  "LINE版 or WEB版（回答待ち）": "LINE or WEB (TBD)",
+  "レシートを送る": "Upload Receipt",
+  "対象商品が記載されたレシートをアップロードしてください。": "Please upload a receipt showing the target product.",
+  "📷 タップして撮影 or 画像を選択": "📷 Tap to shoot or select image",
+  "※JPG・PNG形式、10MB以内": "※ JPG/PNG, max 10MB",
+  "応募回数": "Applications",
+  "今月": "This month",
+  "回応募済み": "applied",
+  "応募する": "Apply",
+  "② レシートアップロード": "② Receipt Upload",
+  "SmartRecieco 標準UI": "SmartRecieco Standard UI",
+  "応募完了": "Application Complete",
+  "ご応募ありがとうございます！": "Thank you for applying!",
+  "審査完了後、即時抽選を行います。": "Instant draw after review.",
+  "応募履歴": "History",
+  "2027/01/06 14:32": "2027/01/06 14:32",
+  "審査中": "Reviewing",
+  "2026/12/20 10:15": "2026/12/20 10:15",
+  "審査OK": "Approved",
+  "抽選する（審査OK後）": "Draw (after approval)",
+  "③ 応募完了 / 応募履歴": "③ Complete / History",
+  "即時審査 → 審査OK後に抽選解放": "Auto review → Draw unlocked",
+  "くじを引く": "Draw Kuji",
+  "タップして運試し！": "Tap your luck!",
+  "ガラポン / トランプ / スロット型選択可": "Garapon / Cards / Slots available",
+  "くじを引く！": "Draw!",
+  "④ インスタントウィン演出": "④ Instant Win Animation",
+  "Smart Kuji カスタマイズアニメーション": "Smart Kuji Custom Animation",
+  "🎉 おめでとうございます！": "🎉 Congratulations!",
+  "オリジナル壁紙が当たりました": "You won an original wallpaper!",
+  "以下のボタンから壁紙をダウンロードしてください。": "Download your wallpaper below.",
+  "📥 壁紙をダウンロード": "📥 Download Wallpaper",
+  "💬 スタンプをダウンロード": "💬 Download Stamp",
+  "※ダウンロードURLは後日メールでも送付されます": "※ URL will also be sent by email",
+  "⑤ 当選画面（デジタルギフト）": "⑤ Win Screen (Digital Gift)",
+  "壁紙・スタンプDL": "Wallpaper/Stamp DL",
+  "ぬいぐるみ当選！": "Stuffed Toy Win!",
+  "🧸 ぬいぐるみ当選！": "🧸 Stuffed Toy Win!",
+  "お届け先をご入力ください": "Enter delivery address",
+  "お名前（必須）": "Name (Required)",
+  "郵便番号（必須）": "Postal Code (Required)",
+  "住所（必須）": "Address (Required)",
+  "電話番号（必須）": "Phone (Required)",
+  "送付先を申請する": "Submit Delivery Info",
+  "⑥ 当選画面（ぬいぐるみ郵送申請）": "⑥ Win (Postal Application)",
+  "個人情報入力フォーム（検討中）": "Personal Info Form (TBD)",
+  "残念...": "Sorry...",
+  "今回はハズレでした": "Not this time",
+  "また商品を購入してチャレンジしてみてください！": "Try again next purchase!",
+  "応募履歴を見る": "View History",
+  "⑦ ハズレ画面": "⑦ Lose Screen",
+  "Smart Kuji 標準UI": "Smart Kuji Standard UI",
+  "景品ラインナップ": "Prize Lineup",
+  "当選確率は各景品で異なります": "Win rates vary by prize",
+  "オリジナル壁紙": "Original Wallpaper",
+  "デジタルDL": "Digital DL",
+  "デジタルスタンプ": "Digital Stamp",
+  "ぬいぐるみ": "Stuffed Toy",
+  "郵送（検討中）": "Postal (TBD)",
+  "※プランAのみ：賞品画像表示機能（+3万円）": "※ Plan A only: Prize image display (+¥30,000)",
+  "⑧ 賞品画像表示（プランAオプション）": "⑧ Prize Images (Plan A Option)",
+  "応募フォームに景品画像を追加": "Add prize images to form",
+  "工数算定依頼ポイント": "Dev Estimation Points",
+  "赤枠箇所に対応するカスタム開発要件。標準機能・管理画面設定のみで対応できる箇所は含まない。": "Custom dev requirements for red-bordered areas. Excludes standard/config-only items.",
+  "区分": "Type",
+  "機能名": "Feature",
+  "要件概要": "Requirements",
+  "難易度": "Difficulty",
+  "確認事項": "Checks",
+  "フロント": "Front",
+  "設定作業": "Config",
+  "応募フォーム賞品画像表示": "Prize Image Display",
+  "郵送用個人情報入力フォーム": "Postal Info Form",
+  "インスタントウィン演出カスタマイズ": "Instant Win Animation",
+  "タグ審査条件設定": "Tag Review Config",
+  "重複レシートチェック設定": "Duplicate Receipt Check",
+  "小": "Small",
+  "小〜中": "Sm-Md",
+  "中": "Medium",
+  "設定のみ": "Config only",
+  "🔴 事前確認事項（PECO様回答待ち）": "🔴 Pre-Checks (Awaiting PECO response)",
+  "見積サマリー（税込）": "Estimate Summary (incl. tax)",
+  "合計（税込）": "Total (incl. tax)"
+};
+var currentLang = 'ja';
+function toggleLang(){
+  currentLang = currentLang === 'ja' ? 'en' : 'ja';
+  var btn = document.getElementById('lang-toggle');
+  btn.textContent = currentLang === 'ja' ? '🌐 English' : '🌐 日本語';
+  btn.style.background = currentLang === 'ja' ? '#555' : '#1d4ed8';
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var key = el.getAttribute('data-i18n');
+    if(TRANS[key]) el.textContent = currentLang === 'en' ? TRANS[key] : key;
+  });
+}
+</script>
+
+</body>
+</html>
