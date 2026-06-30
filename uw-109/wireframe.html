@@ -1,0 +1,541 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ワイヤーフレーム確認用｜jupiter.html UW-109</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #e8e4df; font-family: 'Noto Sans JP', Meiryo, sans-serif; font-size: 13px; color: #333; }
+
+  /* ===== TOOL HEADER ===== */
+  .tool-header {
+    position: sticky; top: 0; z-index: 200;
+    background: #1a1a1a; color: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 20px; border-bottom: 2px solid #EF9F27;
+    gap: 12px;
+  }
+  .tool-header .left { display: flex; align-items: center; gap: 14px; }
+  .tool-header .brand { color: #EF9F27; font-size: 11px; font-weight: bold; letter-spacing: .1em; }
+  .tool-header h1 { font-size: 14px; font-weight: bold; }
+  .tool-header .meta { font-size: 11px; color: #888; }
+  .badge-new { background: #27AE60; color: #fff; font-size: 10px; font-weight: bold; padding: 2px 7px; border-radius: 3px; }
+  .badge-exist { background: #555; color: #ccc; font-size: 10px; padding: 2px 7px; border-radius: 3px; }
+
+  /* ===== LAYOUT ===== */
+  .layout { display: flex; align-items: flex-start; gap: 0; }
+  .page-col { flex: 1 1 0; min-width: 0; }
+  .note-col {
+    width: 300px; flex-shrink: 0;
+    position: sticky; top: 49px;
+    height: calc(100vh - 49px); overflow-y: auto;
+    background: #fff; border-left: 3px solid #EF9F27;
+    padding: 16px;
+  }
+
+  /* ===== ANNOTATION PANEL ===== */
+  .note-col h2 { font-size: 13px; color: #EF9F27; letter-spacing: .08em; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
+  .anno { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid #f0ece8; }
+  .anno:last-child { border-bottom: none; }
+  .anno-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    font-size: 11px; font-weight: bold; margin-right: 6px; flex-shrink: 0;
+    vertical-align: middle;
+  }
+  .anno-num.green { background: #27AE60; color: #fff; }
+  .anno-num.gray  { background: #aaa; color: #fff; }
+  .anno-title { font-weight: bold; font-size: 13px; display: flex; align-items: center; margin-bottom: 5px; }
+  .anno-badge { font-size: 10px; padding: 1px 6px; border-radius: 3px; margin-left: 6px; }
+  .anno-badge.add  { background: #27AE60; color: #fff; }
+  .anno-badge.exist{ background: #bbb; color: #fff; }
+  .anno p { font-size: 12px; line-height: 1.8; color: #555; }
+  .anno ul { padding-left: 16px; font-size: 12px; color: #555; line-height: 1.8; }
+
+  .note-divider { border: none; border-top: 2px solid #EF9F27; margin: 16px 0 12px; }
+  .note-section-label { font-size: 10px; letter-spacing: .12em; color: #EF9F27; font-weight: bold; margin-bottom: 8px; }
+
+  /* ===== SITE MOCKUP ===== */
+  .site { background: #000; color: #fff; font-family: 'Noto Sans JP', Meiryo, Arial, sans-serif; }
+
+  /* nav */
+  .site-nav { background: rgba(0,0,0,.9); border-bottom: 1px solid #222; padding: 10px 24px; display: flex; align-items: center; justify-content: space-between; }
+  .site-nav .logo { font-size: 10px; font-weight: bold; color: #fff; letter-spacing: .1em; line-height: 1.4; }
+  .site-nav .logo span { display: block; font-size: 14px; }
+  .site-nav .navlinks { display: flex; gap: 18px; }
+  .site-nav .navlinks a { color: #999; font-size: 11px; text-decoration: none; }
+  .site-nav .navlinks a.active { color: #c00; border-bottom: 1px solid #c00; }
+
+  /* section block */
+  .site-section { padding: 40px 32px; border-bottom: 1px solid #111; position: relative; }
+  .site-section-dark   { background: #0a0a0a; }
+  .site-section-darker { background: #060606; }
+
+  /* section label tag */
+  .sec-tag {
+    position: absolute; top: 12px; right: 12px;
+    font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 3px; letter-spacing: .06em;
+  }
+  .sec-tag.add   { background: #27AE60; color: #fff; }
+  .sec-tag.exist { background: #444; color: #aaa; }
+
+  /* section num indicator */
+  .sec-num {
+    position: absolute; top: 12px; left: 32px;
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: bold;
+  }
+  .sec-num.green { background: #27AE60; color: #fff; }
+  .sec-num.gray  { background: #555; color: #ccc; }
+
+  .site-h2 { font-size: 18px; font-weight: bold; letter-spacing: .1em; margin-bottom: 6px; color: #fff; }
+  .site-h2 small { display: block; font-size: 10px; color: #666; letter-spacing: .18em; margin-top: 3px; }
+  .site-h2-rule { width: 36px; height: 2px; background: #c00; margin: 10px 0 20px; }
+  .site-h2-rule.green { background: #27AE60; }
+
+  .site-intro { font-size: 13px; line-height: 2; color: #bbb; max-width: 680px; margin-bottom: 20px; }
+
+  /* existing content placeholder */
+  .exist-block { background: #111; border: 1px solid #222; padding: 16px; margin-bottom: 0; }
+  .exist-label { font-size: 10px; color: #444; letter-spacing: .1em; margin-bottom: 8px; }
+  .exist-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .exist-chip { background: #1a1a1a; border: 1px solid #2a2a2a; padding: 8px 12px; font-size: 11px; color: #555; border-radius: 2px; }
+
+  /* photo grid */
+  .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+  .photo-grid.col2 { grid-template-columns: repeat(2, 1fr); }
+  .photo-card { position: relative; }
+  .photo-card { position: relative; }
+  .photo-card img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: #1a1a1a; }
+  .img-placeholder {
+    display: none; aspect-ratio: 4/3; background: #111; border: 1px dashed #333;
+    align-items: center; justify-content: center; flex-direction: column;
+    gap: 6px; color: #444; font-size: 11px; text-align: center; padding: 12px;
+  }
+  .img-placeholder .pi { font-size: 28px; color: #2a2a2a; }
+  .img-placeholder .pf { word-break: break-all; color: #444; font-size: 10px; font-family: monospace; }
+  .photo-card img.error { visibility: hidden; }
+  .photo-placeholder {
+    display: none; position: absolute; top: 0; left: 0; right: 0;
+    aspect-ratio: 4/3; background: #111; border: 1px dashed #333;
+    align-items: center; justify-content: center; flex-direction: column;
+    gap: 6px; color: #444; font-size: 11px; text-align: center; padding: 8px;
+  }
+  .photo-placeholder.show { display: flex; }
+  .photo-placeholder .icon { font-size: 24px; color: #333; }
+  .photo-placeholder .fname { word-break: break-all; color: #555; font-size: 10px; }
+  .photo-caption { padding: 8px 0 0; }
+  .photo-caption h4 { font-size: 11px; color: #EF9F27; letter-spacing: .07em; margin-bottom: 3px; }
+  .photo-caption p  { font-size: 11px; color: #777; line-height: 1.7; }
+
+  /* notice */
+  .site-notice { border: 1px solid #333; border-left: 3px solid #EF9F27; padding: 14px 18px; margin-bottom: 24px; }
+  .site-notice p { font-size: 12px; color: #999; line-height: 1.9; }
+
+  /* engine hero */
+  .engine-hero { display: flex; gap: 20px; margin-bottom: 24px; }
+  .engine-hero img { width: 52%; object-fit: cover; }
+  .engine-hero-text p { font-size: 12px; color: #bbb; line-height: 1.9; }
+  .engine-hero-text .label { color: #EF9F27; font-size: 11px; letter-spacing: .1em; margin-bottom: 6px; }
+
+  /* new section highlight */
+  .new-highlight { border-left: 3px solid #27AE60; }
+
+  /* hero block */
+  .hero-block { background: #000; min-height: 220px; display: flex; align-items: center; padding: 40px 32px; border-bottom: 1px solid #111; }
+  .hero-block .inner { }
+  .hero-block p { font-size: 13px; line-height: 2; color: #aaa; margin-bottom: 12px; }
+  .hero-block h2 { font-size: 15px; color: #fff; letter-spacing: .06em; }
+  .slider-placeholder { background: #111; height: 180px; display: flex; align-items: center; justify-content: center; color: #444; font-size: 12px; letter-spacing: .1em; border-bottom: 1px solid #1a1a1a; }
+
+  .copyright { background: #000; padding: 14px 24px; font-size: 10px; color: #333; text-align: center; letter-spacing: .15em; }
+</style>
+</head>
+<body>
+
+<!-- TOOL HEADER -->
+<div class="tool-header">
+  <div class="left">
+    <div class="brand">WorldWideSystem</div>
+    <h1>ワイヤーフレーム確認用 — jupiter.html</h1>
+  </div>
+  <div class="meta">UW-109 ／ Ver 1.0 ／ 2026.06.30</div>
+</div>
+
+<div class="layout">
+
+  <!-- ===== PAGE MOCKUP ===== -->
+  <div class="page-col">
+    <div class="site">
+
+      <!-- NAV -->
+      <div class="site-nav" style="position:relative;">
+        <span class="sec-tag exist">既存</span>
+        <div class="logo">PROUD TO BE<span>UNIVERSAL WORKERS</span></div>
+        <div class="navlinks">
+          <a href="#">日々の鍛錬</a>
+          <a href="#" class="active">設備のこだわり</a>
+          <a href="#">ユニバーサルワーカーズの誇り</a>
+          <a href="#">上陸実績</a>
+        </div>
+      </div>
+
+      <!-- HERO -->
+      <div class="hero-block" style="position:relative;">
+        <span class="sec-tag exist">既存</span>
+        <div class="inner">
+          <p>狭経験と知識を挑戦への力に変え、ルールにあてはまらない<br>自由な発想を形にした次世代型観光船「ジュピター」。</p>
+          <h2>2017年導入 第3世代 JUPITER "ジュピター"</h2>
+        </div>
+      </div>
+
+      <!-- SLIDER -->
+      <div class="slider-placeholder">
+        ▷ PHOTO SLIDER（8枚：slider01〜slider08.jpg）
+      </div>
+
+      <!-- 主な詳細 -->
+      <div class="site-section site-section-dark" style="position:relative;">
+        <span class="sec-tag exist">既存</span>
+        <div class="site-h2">主な詳細 <small>PRINCIPAL PARTICULARS</small></div>
+        <div class="site-h2-rule"></div>
+        <div class="exist-block">
+          <div class="exist-label">▸ 船体スペック詳細（船体素材・全長・全幅・喫水・総トン数）</div>
+          <div class="exist-chips">
+            <div class="exist-chip">船体：ハイレベル強化プラスチック</div>
+            <div class="exist-chip">全長 32.00m</div>
+            <div class="exist-chip">全幅 6.30m</div>
+            <div class="exist-chip">喫水 1.30m</div>
+            <div class="exist-chip">総トン数 99t</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 各客室 -->
+      <div class="site-section site-section-darker" style="position:relative;">
+        <span class="sec-tag exist">既存</span>
+        <div class="site-h2">各フロア客室・デッキ紹介</div>
+        <div class="site-h2-rule"></div>
+        <div class="exist-block">
+          <div class="exist-label">▸ 客室・デッキ 4セクション（写真グリッド＋特徴テキスト）</div>
+          <div class="exist-chips">
+            <div class="exist-chip">1階メイン客室 P56席</div>
+            <div class="exist-chip">1階デッキ 33席</div>
+            <div class="exist-chip">2階客室 31席</div>
+            <div class="exist-chip">2階デッキ 32席</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- コントロールルーム -->
+      <div class="site-section site-section-dark" style="position:relative;">
+        <span class="sec-tag exist">既存</span>
+        <div class="site-h2">コントロールルーム <small>Control room</small></div>
+        <div class="site-h2-rule"></div>
+        <div class="exist-block">
+          <div class="exist-label">▸ 操舵室説明テキスト＋写真</div>
+          <div class="exist-chips">
+            <div class="exist-chip">操船情報・36画面モニタリング・音響映像システム等</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 安全性・快適性 -->
+      <div class="site-section site-section-darker" style="position:relative;">
+        <span class="sec-tag exist">既存</span>
+        <div class="site-h2">安全性・快適性 <small>Safety / Comfort</small></div>
+        <div class="site-h2-rule"></div>
+        <div class="exist-block">
+          <div class="exist-label">▸ 安全性4項目・快適性6項目（テキスト説明）</div>
+          <div class="exist-chips">
+            <div class="exist-chip">サイドスラスター</div>
+            <div class="exist-chip">ハイクオリティーキール</div>
+            <div class="exist-chip">セキュリティーカメラ</div>
+            <div class="exist-chip">水密扉アラーム</div>
+            <div class="exist-chip">LED照明コントロール</div>
+            <div class="exist-chip">UVカット仕様ウインドウ</div>
+            <div class="exist-chip">全方向AVシステム</div>
+            <div class="exist-chip">WIFIシステム</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ★ 追加① 定期整備 -->
+      <div class="site-section site-section-dark new-highlight" style="position:relative;">
+        <span class="sec-tag add">追加①</span>
+        <div class="site-h2">
+          定期整備
+          <small>REGULAR MAINTENANCE</small>
+        </div>
+        <div class="site-h2-rule green"></div>
+
+        <div class="site-intro">
+          ジュピターでは、おおよそ5〜6年おきに9ヶ月から1年をかけて定期整備・ドック入りを行っています。<br><br>
+          定期整備では、機関マンテナンスを中心に経年劣化の高い部品の交換、また燃料系からメインエンジン・発電機エンジンなども整備し、さらなる安全な旅客の輸送サービスを提供するための機能維持に努めています。<br><br>
+          これらの定期整備は、法令・保険の条件に基づく義務的なメンテナンスに加え、乗客の乗り心地と安全性を最高に保つための自主的な整備も含まれています。
+        </div>
+
+        <div class="site-notice">
+          <p>
+            定期整備の期間中は、<strong style="color:#EF9F27;">毎年3月〜4月頃の繁忙期</strong>を避けた時期に実施しています。<br>
+            ご利用をご検討の際はお早めに確認いただき、乗船日に問題がないかご確認をお願いします。<br>
+            その間も他のクルー運営による問題なく旅客の輸送サービスを継続して提供できる万全の準備が整っています。
+          </p>
+        </div>
+
+        <!-- 定期整備 写真グリッド -->
+        <div class="photo-grid">
+
+          <div class="photo-card">
+            <img src="https://raw.githubusercontent.com/wwskamata/wws-proposals/main/uw-109/images/主機LO交換1.jpg" alt="主機 潤滑油交換" id="img_主機LO交換1_jpg" onerror="this.style.display='none';document.getElementById('ph_主機LO交換1_jpg').style.display='flex'"><div class="img-placeholder" id="ph_主機LO交換1_jpg"><div class="pi">📷</div><div class="pf">主機LO交換1.jpg</div><div style="color:#555;font-size:10px;margin-top:2px;">画像アップロード待ち</div></div>
+            <div class="photo-placeholder"><div class="icon">📷</div><div class="fname">主機LO交換1.jpg</div><div style="color:#444;font-size:10px;">画像アップロード待ち</div></div>
+            <div class="photo-caption">
+              <h4>主機エンジン 潤滑油（エンジンオイル）交換</h4>
+              <p>主機エンジンの潤滑油交換。新品の潤滑油に入れ替えることでエンジン各部の摩擦を低減し、燃費改善と摩耗防止を同時に図ります。適切なオイルを抜き取り、フラッシングも行います。</p>
+            </div>
+          </div>
+
+          <div class="photo-card">
+            <img src="https://raw.githubusercontent.com/wwskamata/wws-proposals/main/uw-109/images/主機LOエレメント交換1.JPG" alt="主機 LOエレメント交換" id="img_主機LOエレメント交換1_JPG" onerror="this.style.display='none';document.getElementById('ph_主機LOエレメント交換1_JPG').style.display='flex'"><div class="img-placeholder" id="ph_主機LOエレメント交換1_JPG"><div class="pi">📷</div><div class="pf">主機LOエレメント交換1.JPG</div><div style="color:#555;font-size:10px;margin-top:2px;">画像アップロード待ち</div></div>
+            <div class="photo-placeholder"><div class="icon">📷</div><div class="fname">主機LOエレメント交換1.JPG</div><div style="color:#444;font-size:10px;">画像アップロード待ち</div></div>
+            <div class="photo-caption">
+              <h4>主機エンジン LOエレメント交換</h4>
+              <p>エレメントはエンジン内部を循環するオイルの汚れを除去するフィルター部品です。定期整備時期には必ずエレメントを交換し、定期的メンテナンスを実施し、汚れ・目詰まりによる油圧不足や焼け付きリスクを防ぎます。</p>
+            </div>
+          </div>
+
+          <div class="photo-card">
+            <img src="https://raw.githubusercontent.com/wwskamata/wws-proposals/main/uw-109/images/主機燃料噴射ポンプLOストレーナー1.jpg" alt="主機 燃料噴射ポンプLOストレーナー" id="img_主機燃料噴射ポンプLOストレーナー1_jpg" onerror="this.style.display='none';document.getElementById('ph_主機燃料噴射ポンプLOストレーナー1_jpg').style.display='flex'"><div class="img-placeholder" id="ph_主機燃料噴射ポンプLOストレーナー1_jpg"><div class="pi">📷</div><div class="pf">主機燃料噴射ポンプLOストレーナー1.jpg</div><div style="color:#555;font-size:10px;margin-top:2px;">画像アップロード待ち</div></div>
+            <div class="photo-placeholder"><div class="icon">📷</div><div class="fname">主機燃料噴射ポンプLOストレーナー1.jpg</div><div style="color:#444;font-size:10px;">画像アップロード待ち</div></div>
+            <div class="photo-caption">
+              <h4>主機エンジン 燃料噴射ポンプ LOストレーナー</h4>
+              <p>燃料噴射ポンプに供給される潤滑油を清浄に保つストレーナーの整備。詰まりやすい部位であり、定期的な清掃・交換が行われないと噴射ポンプ潤滑不足から燃料系の重大故障につながるリスクを管理します。</p>
+            </div>
+          </div>
+
+          <div class="photo-card">
+            <img src="https://raw.githubusercontent.com/wwskamata/wws-proposals/main/uw-109/images/主機海水ポンプインペラ1.jpg" alt="主機 海水ポンプインペラ交換" id="img_主機海水ポンプインペラ1_jpg" onerror="this.style.display='none';document.getElementById('ph_主機海水ポンプインペラ1_jpg').style.display='flex'"><div class="img-placeholder" id="ph_主機海水ポンプインペラ1_jpg"><div class="pi">📷</div><div class="pf">主機海水ポンプインペラ1.jpg</div><div style="color:#555;font-size:10px;margin-top:2px;">画像アップロード待ち</div></div>
+            <div class="photo-placeholder"><div class="icon">📷</div><div class="fname">主機海水ポンプインペラ1.jpg</div><div style="color:#444;font-size:10px;">画像アップロード待ち</div></div>
+            <div class="photo-caption">
+              <h4>主機エンジン 海水ポンプ インペラ交換</h4>
+              <p>主機エンジンの冷却水にポンプが使う海水を循環させるインペラ（羽根車）の交換整備。インペラは海水の不純物により摩耗しやすく、定期的に行われ、定期整備の重要な作業の一つです。</p>
+            </div>
+          </div>
+
+          <div class="photo-card">
+            <img src="https://raw.githubusercontent.com/wwskamata/wws-proposals/main/uw-109/images/発電機LO交換1.jpg" alt="発電機 潤滑油交換" id="img_発電機LO交換1_jpg" onerror="this.style.display='none';document.getElementById('ph_発電機LO交換1_jpg').style.display='flex'"><div class="img-placeholder" id="ph_発電機LO交換1_jpg"><div class="pi">📷</div><div class="pf">発電機LO交換1.jpg</div><div style="color:#555;font-size:10px;margin-top:2px;">画像アップロード待ち</div></div>
+            <div class="photo-placeholder"><div class="icon">📷</div><div class="fname">発電機LO交換1.jpg</div><div style="color:#444;font-size:10px;">画像アップロード待ち</div></div>
+            <div class="photo-caption">
+              <h4>発電機エンジン 潤滑油（エンジンオイル）交換</h4>
+              <p>客室照明や設備機器に電力を供給する発電機エンジンの潤滑油交換。主機エンジンと同様に定期的な交換が必要であり、発電機エンジンオイル・LOエレメントなどを一括でメンテナンスします。</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ★ 追加② エンジン開放整備 -->
+      <div class="site-section site-section-darker new-highlight" style="position:relative;">
+        <span class="sec-tag add">追加②</span>
+        <div class="site-h2">
+          2025年1月 筑豊製作所 エンジン開放整備
+          <small>ENGINE OVERHAUL ／ CHIKUHO SEISAKUJO, JANUARY 2025</small>
+        </div>
+        <div class="site-h2-rule green"></div>
+
+        <!-- メイン写真 + テキスト -->
+        <div class="engine-hero">
+          <img src="https://raw.githubusercontent.com/wwskamata/wws-proposals/main/uw-109/images/IMG_5369.jpeg" alt="エンジン開放整備 全景" id="img_IMG_5369_jpeg" onerror="this.style.display='none';document.getElementById('ph_IMG_5369_jpeg').style.display='flex'"><div class="img-placeholder" id="ph_IMG_5369_jpeg"><div class="pi">📷</div><div class="pf">IMG_5369.jpeg</div><div style="color:#555;font-size:10px;margin-top:2px;">画像アップロード待ち</div></div>
+            <div class="photo-placeholder"><div class="icon">📷</div><div class="fname">IMG_5369.jpeg</div><div style="color:#444;font-size:10px;">画像アップロード待ち</div></div>
+          <div class="engine-hero-text">
+            <p class="label">筑豊製作所 エンジン開放 全景</p>
+            <p>2025年1月、筑豊製作所においてジュピターの主機エンジンを開放整備（エンジンオーバーホール）を実施いたしました。<br><br>
+            エンジン開放とは、エンジン本体を陸上の専門工場で全分解し、各部品の計測・清掃・研磨を精密に行い、摩耗・損傷部品を交換するものです。浮体施設としての船舶では定期的に実施が求められる整備で、次世代を担う安全な航路運航のための必要不可欠な整備です。<br><br>
+            また、定期整備のエンジン開放は法令・保険の義務的な整備に加え、乗客の乗り心地と安全性を最高に保つための自主的な整備も含まれています。<br><br>
+            この整備の成果と安心・安全のメンテナンスを確認いただける写真記録として公開します。</p>
+          </div>
+        </div>
+
+        <!-- エンジン開放 写真グリッド -->
+        <div class="photo-grid col2">
+
+          <div class="photo-card">
+            <img src="https://raw.githubusercontent.com/wwskamata/wws-proposals/main/uw-109/images/IMG_5360.jpeg" alt="主機 シリンダーブロック分解" id="img_IMG_5360_jpeg" onerror="this.style.display='none';document.getElementById('ph_IMG_5360_jpeg').style.display='flex'"><div class="img-placeholder" id="ph_IMG_5360_jpeg"><div class="pi">📷</div><div class="pf">IMG_5360.jpeg</div><div style="color:#555;font-size:10px;margin-top:2px;">画像アップロード待ち</div></div>
+            <div class="photo-placeholder"><div class="icon">📷</div><div class="fname">IMG_5360.jpeg</div><div style="color:#444;font-size:10px;">画像アップロード待ち</div></div>
+            <div class="photo-caption">
+              <h4>主機エンジン シリンダーブロック分解</h4>
+              <p>主機エンジンからシリンダーブロックを取り外した状態での整備。シリンダー内壁の状態を確認し、摩耗・スラッジの蓄積を清掃し、必要な部品はクランクから→メインエンジン→クランクオイルシール交換する正確な整備を行います。</p>
+            </div>
+          </div>
+
+          <div class="photo-card">
+            <img src="https://raw.githubusercontent.com/wwskamata/wws-proposals/main/uw-109/images/IMG_5371.jpeg" alt="ターボチャージャー 分解清掃" id="img_IMG_5371_jpeg" onerror="this.style.display='none';document.getElementById('ph_IMG_5371_jpeg').style.display='flex'"><div class="img-placeholder" id="ph_IMG_5371_jpeg"><div class="pi">📷</div><div class="pf">IMG_5371.jpeg</div><div style="color:#555;font-size:10px;margin-top:2px;">画像アップロード待ち</div></div>
+            <div class="photo-placeholder"><div class="icon">📷</div><div class="fname">IMG_5371.jpeg</div><div style="color:#444;font-size:10px;">画像アップロード待ち</div></div>
+            <div class="photo-caption">
+              <h4>ターボチャージャー 分解清掃</h4>
+              <p>主機エンジンから取り外したターボチャージャーの分解清掃。ターボは燃焼に必要な酸素を圧縮するため定期的な専門工場での整備が求められます。ハウジング内の堆積物を除去し、インペラの変形・割れ・バランス調整なども一度の整備で確認します。</p>
+            </div>
+          </div>
+
+          <div class="photo-card">
+            <img src="https://raw.githubusercontent.com/wwskamata/wws-proposals/main/uw-109/images/IMG_5372.jpeg" alt="エンジン冷却水経路 整備" id="img_IMG_5372_jpeg" onerror="this.style.display='none';document.getElementById('ph_IMG_5372_jpeg').style.display='flex'"><div class="img-placeholder" id="ph_IMG_5372_jpeg"><div class="pi">📷</div><div class="pf">IMG_5372.jpeg</div><div style="color:#555;font-size:10px;margin-top:2px;">画像アップロード待ち</div></div>
+            <div class="photo-placeholder"><div class="icon">📷</div><div class="fname">IMG_5372.jpeg</div><div style="color:#444;font-size:10px;">画像アップロード待ち</div></div>
+            <div class="photo-caption">
+              <h4>エンジン冷却水経路 整備</h4>
+              <p>インタークーラー・ウォーターポンプ・ホース等の冷却経路を整備した写真記録。冷却水経路の詰まり・漏れは緊急停船につながる深刻な故障を招くため、エンジン開放時に冷却経路全体を分解し、内部のスケール除去・ホース交換・ポンプ性能確認まで徹底的に整備します。</p>
+            </div>
+          </div>
+
+          <div class="photo-card">
+            <img src="https://raw.githubusercontent.com/wwskamata/wws-proposals/main/uw-109/images/IMG_5373.jpeg" alt="主機エンジン 組み上げ後確認" id="img_IMG_5373_jpeg" onerror="this.style.display='none';document.getElementById('ph_IMG_5373_jpeg').style.display='flex'"><div class="img-placeholder" id="ph_IMG_5373_jpeg"><div class="pi">📷</div><div class="pf">IMG_5373.jpeg</div><div style="color:#555;font-size:10px;margin-top:2px;">画像アップロード待ち</div></div>
+            <div class="photo-placeholder"><div class="icon">📷</div><div class="fname">IMG_5373.jpeg</div><div style="color:#444;font-size:10px;">画像アップロード待ち</div></div>
+            <div class="photo-caption">
+              <h4>主機エンジン 組み上げ後確認</h4>
+              <p>主機エンジンから取り外したシリンダーブロックを元に戻す再組み立て後の確認写真。クランクを含む主要部品が正確に組み付けられ、オイルシール交換などの補修作業も完了した状態で試運転前の最終確認を行います。乗船後の機動力と燃費改善に向けた整備です。</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="copyright">Copyright © UNIVERSAL WORKERS</div>
+
+    </div><!-- /site -->
+  </div><!-- /page-col -->
+
+  <!-- ===== ANNOTATION PANEL ===== -->
+  <div class="note-col">
+    <h2>📋 ページ構成コメント</h2>
+
+    <div class="note-section-label">▸ 既存セクション（変更なし）</div>
+
+    <div class="anno">
+      <div class="anno-title">
+        <span class="anno-num gray">N</span>ナビゲーション
+        <span class="anno-badge exist">既存</span>
+      </div>
+      <p>サイト共通ヘッダー。現状のまま変更なし。</p>
+    </div>
+
+    <div class="anno">
+      <div class="anno-title">
+        <span class="anno-num gray">H</span>ヒーロー＋スライダー
+        <span class="anno-badge exist">既存</span>
+      </div>
+      <p>ジュピター紹介テキスト＋写真スライダー8枚。変更なし。</p>
+    </div>
+
+    <div class="anno">
+      <div class="anno-title">
+        <span class="anno-num gray">S</span>主な詳細
+        <span class="anno-badge exist">既存</span>
+      </div>
+      <p>スペック表（船体素材・全長・全幅等）。変更なし。</p>
+    </div>
+
+    <div class="anno">
+      <div class="anno-title">
+        <span class="anno-num gray">F</span>各フロア紹介
+        <span class="anno-badge exist">既存</span>
+      </div>
+      <ul>
+        <li>1階メイン客室 P56席</li>
+        <li>1階デッキ 33席</li>
+        <li>2階客室 31席</li>
+        <li>2階デッキ 32席</li>
+      </ul>
+    </div>
+
+    <div class="anno">
+      <div class="anno-title">
+        <span class="anno-num gray">C</span>コントロールルーム
+        <span class="anno-badge exist">既存</span>
+      </div>
+      <p>操舵室説明＋写真。変更なし。</p>
+    </div>
+
+    <div class="anno">
+      <div class="anno-title">
+        <span class="anno-num gray">A</span>安全性・快適性
+        <span class="anno-badge exist">既存</span>
+      </div>
+      <p>サイドスラスター・LED照明等8項目。変更なし。</p>
+    </div>
+
+    <hr class="note-divider">
+    <div class="note-section-label">▸ 追加セクション（UW-109）</div>
+
+    <div class="anno">
+      <div class="anno-title">
+        <span class="anno-num green">①</span>定期整備
+        <span class="anno-badge add">追加</span>
+      </div>
+      <ul>
+        <li>セクション見出し：定期整備 / REGULAR MAINTENANCE</li>
+        <li>イントロテキスト：整備サイクルヷ目的・背景の説明文</li>
+        <li>ノーティスボックス：繁忙期を避けた整備時期の告知</li>
+        <li>写真グリッド（3列）：定期整備の写真5枚
+          <ul style="padding-left:14px;margin-top:4px;">
+            <li>主機LO交換</li>
+            <li>主機LOエレメント交換</li>
+            <li>燃料噴射ポンプLOストレーナー</li>
+            <li>主機海水ポンプインペラ交換</li>
+            <li>発電機LO交換</li>
+          </ul>
+        </li>
+        <li>各写真にキャプション見出し＋説明文</li>
+      </ul>
+    </div>
+
+    <div class="anno">
+      <div class="anno-title">
+        <span class="anno-num green">②</span>エンジン開放整備
+        <span class="anno-badge add">追加</span>
+      </div>
+      <ul>
+        <li>見出し：2025年1月 筑豊製作所 エンジン開放整備</li>
+        <li>メインビジュアル（IMG_5369）＋説明文の横並びレイアウト</li>
+        <li>写真グリッド（2列）：開放整備写真4枚
+          <ul style="padding-left:14px;margin-top:4px;">
+            <li>シリンダーブロック分解（IMG_5360）</li>
+            <li>ターボチャージャー清掃（IMG_5371）</li>
+            <li>冷却水経路整備（IMG_5372）</li>
+            <li>組み上げ後確認（IMG_5373）</li>
+          </ul>
+        </li>
+        <li>各写真にキャプション見出し＋説明文</li>
+      </ul>
+    </div>
+
+    <hr class="note-divider">
+    <div class="note-section-label">▸ 技術メモ</div>
+
+    <div class="anno">
+      <div class="anno-title">⚠ 画像について</div>
+      <p>写真はGitHub Rawから読み込み：<br>
+      <code style="font-size:10px;word-break:break-all;">raw.githubusercontent.com/wwskamata/wws-proposals/main/uw-109/images/</code><br><br>
+      表示されない場合は <code>upload_images_to_github.ps1</code> を実行して画像をアップロードしてください。</p>
+    </div>
+
+    <div class="anno">
+      <div class="anno-title">📌 挿入位置</div>
+      <p>「安全性・快適性」セクションの<strong>直後</strong>に①②を追加。<br>ページ末尾（Copyright直前）に配置。</p>
+    </div>
+
+    <div class="anno">
+      <div class="anno-title">🔗 GitHub Pages確認URL</div>
+      <p style="word-break:break-all;font-size:11px;">
+        <a href="https://wwskamata.github.io/wws-proposals/uw-109/" target="_blank" style="color:#EF9F27;">
+          wwskamata.github.io/wws-proposals/uw-109/
+        </a>
+      </p>
+    </div>
+
+  </div><!-- /note-col -->
+
+</div><!-- /layout -->
+
+</body>
+</html>
