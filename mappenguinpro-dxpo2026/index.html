@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>MapPenguinPro DXPO東京'26 展示会デモ準備 プロジェクト管理表</title>
+<style>
+  :root{
+    --navy:#0f2a4a; --accent:#e8622c; --accent2:#1a73a8;
+    --bg:#f4f6f9; --card:#ffffff; --border:#e1e5eb; --text:#1c2733; --sub:#5b6b7c;
+    --ok:#2e9e5b; --warn:#e0a020; --danger:#d9432c;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Hiragino Sans","Yu Gothic",-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;}
+  header{background:linear-gradient(120deg,var(--navy),#193a63);color:#fff;padding:28px 36px;}
+  header h1{margin:0 0 6px;font-size:22px;letter-spacing:.02em;}
+  header p{margin:0;color:#cfe0f0;font-size:13px;}
+  .meta-bar{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;}
+  .meta-chip{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);padding:6px 12px;border-radius:20px;font-size:12px;}
+  nav{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--border);display:flex;gap:4px;padding:0 36px;z-index:10;overflow-x:auto;}
+  nav button{border:none;background:none;padding:14px 16px;font-size:13px;font-weight:600;color:var(--sub);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;}
+  nav button.active{color:var(--navy);border-bottom-color:var(--accent);}
+  main{max-width:1180px;margin:0 auto;padding:28px 36px 80px;}
+  section{display:none;}
+  section.active{display:block;}
+  h2.sec-title{font-size:19px;margin:0 0 6px;color:var(--navy);}
+  .sec-desc{color:var(--sub);font-size:13px;margin:0 0 20px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:16px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  @media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr;}}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{border:1px solid var(--border);padding:9px 10px;text-align:left;vertical-align:top;}
+  th{background:#eef2f7;color:var(--navy);font-weight:700;font-size:12px;}
+  tr:nth-child(even) td{background:#fafbfc;}
+  .tag{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:700;color:#fff;}
+  .tag-digital{background:var(--accent2);}
+  .tag-illust-out{background:#6b4fa0;}
+  .tag-illust-in{background:var(--accent);}
+  .badge{display:inline-block;padding:3px 10px;border-radius:5px;font-size:11px;font-weight:700;}
+  .b-done{background:#e4f6ea;color:var(--ok);}
+  .b-progress{background:#fef3e2;color:#b3711a;}
+  .b-todo{background:#eef1f4;color:var(--sub);}
+  .b-risk{background:#fde9e6;color:var(--danger);}
+  .pattern-card h3{margin:0 0 4px;font-size:15px;color:var(--navy);}
+  .pattern-card .num{display:inline-block;width:22px;height:22px;border-radius:50%;background:var(--navy);color:#fff;text-align:center;line-height:22px;font-size:12px;margin-right:8px;}
+  .legend-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;}
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:16px 0;}
+  .flow .step{background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--navy);}
+  .flow .arrow{color:var(--sub);font-size:14px;}
+  .env-box{background:#101c2c;color:#dce8f5;border-radius:10px;padding:16px 20px;font-size:13px;font-family:ui-monospace,Consolas,monospace;}
+  .env-box b{color:#8fd3ff;}
+  .footnote{font-size:12px;color:var(--sub);margin-top:6px;}
+  .link{color:var(--accent2);}
+  .progressbar{height:8px;border-radius:5px;background:#e5e9ee;overflow:hidden;}
+  .progressbar span{display:block;height:100%;background:var(--accent);}
+</style>
+</head>
+<body>
+
+<div id="gate" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0f2a4a;color:#fff;font-family:'Hiragino Sans','Yu Gothic',sans-serif;">
+  <div style="background:#132844;padding:36px 40px;border-radius:12px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4);min-width:260px;">
+    <div style="font-size:15px;font-weight:700;margin-bottom:6px;">MapPenguinPro DXPO展示会 準備資料</div>
+    <div style="font-size:12px;color:#a9c0d8;margin-bottom:16px;">社内限定資料です。閲覧パスワードを入力してください</div>
+    <input id="gate-pw" type="password" style="padding:9px 12px;border-radius:6px;border:none;width:200px;font-size:14px;" placeholder="パスワード" autofocus>
+    <br>
+    <button onclick="checkGate()" style="margin-top:14px;padding:8px 26px;border:none;border-radius:6px;background:#e8622c;color:#fff;font-weight:700;cursor:pointer;font-size:13px;">開く</button>
+    <div id="gate-error" style="color:#ff8a80;font-size:12px;margin-top:10px;display:none;">パスワードが違います</div>
+  </div>
+</div>
+<div id="protected-content" style="display:none;">
+
+<header>
+  <h1>MapPenguinPro｜DXPO東京'26 展示会デモ準備 プロジェクト管理表</h1>
+  <p>ユーザー画面デモの画面パターン設計・登録データ指示・準備スケジュールを一元管理</p>
+  <div class="meta-bar">
+    <div class="meta-chip">出展：DXPO東京'26夏（バックオフィスDXPO／経営支援・DX推進展）</div>
+    <div class="meta-chip">会場：東京ビッグサイト 西1・2・3ホール</div>
+    <div class="meta-chip">会期：2026年8月18日（火）・19日（水）</div>
+    <div class="meta-chip">作成日：2026年7月22日</div>
+  </div>
+</header>
+
+<nav id="tabnav">
+  <button data-tab="overview" class="active">概要</button>
+  <button data-tab="patterns">画面パターン設計</button>
+  <button data-tab="data">登録データ指示</button>
+  <button data-tab="team">チームへの指示</button>
+  <button data-tab="schedule">プロジェクト管理表・予定</button>
+</nav>
+
+<main>
+
+<!-- OVERVIEW -->
+<section id="overview" class="active">
+  <h2 class="sec-title">この資料について</h2>
+  <p class="sec-desc">DXPO東京'26（2026年8月18日～19日／東京ビッグサイト）のブースで、MapPenguinProの「ユーザー画面」を来場者に実演するための準備をまとめたもの。工場での主要な使われ方を7つの画面パターンに整理し、各パターンで登録すべきデータの種類・件数を指定した。</p>
+
+  <div class="grid2">
+    <div class="card">
+      <h3 style="margin-top:0;color:var(--navy);font-size:15px;">目的</h3>
+      <ul style="margin:0;padding-left:18px;font-size:13px;color:var(--text);">
+        <li>ブース来場者に「工場でMapPenguinProがどう使われるか」を1つのストーリーで見せる</li>
+        <li>屋外（拠点全体）→屋内（各活用シーン）の順で、迷わず案内できるデモ動線をつくる</li>
+        <li>チームが個別に判断せず作業できるよう、画面パターン・登録データ・件数を先に決めておく</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0;color:var(--navy);font-size:15px;">デモ環境</h3>
+      <div class="env-box">
+        <div>管理画面：<b>https://demo-mappro.smartmap-pro.com/wsroot/login</b></div>
+        <div>&nbsp;&nbsp;ID・PW：社内共有資料（Slack/共有ドライブ）を参照してください</div>
+        <div style="margin-top:6px;">ユーザー画面：<b>https://demo-mappro.smartmap-pro.com/maps/OA3rd47y/display</b></div>
+      </div>
+      <p class="footnote">現状はテスト用の仮データ（area3／まち／shortest path test 等）のみ登録されており、実演用データは未作成。本資料のパターンに沿って新規登録が必要。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0;color:var(--navy);font-size:15px;">全体構成（7パターン）</h3>
+    <div class="flow">
+      <div class="step">① デジタルマップ：屋外（拠点一覧）</div><div class="arrow">→</div>
+      <div class="step">② イラストマップ：屋外プラント全体</div><div class="arrow">→</div>
+      <div class="step">③ 屋内イラスト：ヒヤリハット</div><div class="arrow">→</div>
+      <div class="step">④ 屋内イラスト：通行規制・避難</div><div class="arrow">→</div>
+      <div class="step">⑤ 屋内イラスト：教育・技術継承</div><div class="arrow">→</div>
+      <div class="step">⑥ 屋内イラスト：衛生管理</div><div class="arrow">→</div>
+      <div class="step">⑦ 屋内イラスト：資産管理・IoT</div>
+    </div>
+    <p class="footnote">①②が「導入」、③～⑦が提案書の活用シーン①～⑤に対応する「主役画面」。ブースでは①→②→③～⑦の順に見せると、来場者が迷わない。</p>
+  </div>
+</section>
+
+<!-- PATTERNS -->
+<section id="patterns">
+  <h2 class="sec-title">画面パターン設計（全7パターン）</h2>
+  <p class="sec-desc">「デジタルマップ（実写地図）」と「イラストマップ（屋外プラント／屋内フロア）」の2系統。屋内イラストは提案書の活用シーン①～⑤にそのまま対応させた。</p>
+
+  <div class="card pattern-card">
+    <h3><span class="num">1</span>デジタルマップ：屋外（複数拠点比較）　<span class="tag tag-digital">デジタルマップ</span></h3>
+    <p style="font-size:13px;margin:6px 0;">実写の地図（ストリート／衛星）上に、同一企業の複数拠点を並べて表示する「経営層向け全社俯瞰」画面。ピンをタップすると各拠点のプラント全体マップ（パターン2）に遷移する導入画面。</p>
+    <table>
+      <tr><th style="width:20%;">見せ方（画面状態）</th><td>実写地図をズームアウトした状態で拠点ピンを一覧表示。1拠点をタップ→吹き出しで拠点名・稼働状況KPIを表示→「マップを開く」でパターン2へ遷移。</td></tr>
+      <tr><th>登録データパターン</th><td>拠点ピン（本社工場／第二工場／物流センター／研究所　等）。各ピンに稼働状況バッジ（ヒヤリハット件数・点検完了率など）を付与。</td></tr>
+      <tr><th>登録数の目安</th><td>拠点ピン　<b>3～4件</b></td></tr>
+      <tr><th>対応シーン</th><td>提案書 p.4想定利用者「経営層」／全体俯瞰ダッシュボード</td></tr>
+    </table>
+  </div>
+
+  <div class="card pattern-card">
+    <h3><span class="num">2</span>イラストマップ：屋外プラント全体　<span class="tag tag-illust-out">イラスト（屋外）</span></h3>
+    <p style="font-size:13px;margin:6px 0;">1拠点の敷地全体を俯瞰イラスト（アイソメトリック調）で表示。建屋・通用口・避難場所・通行規制を配置し、各建屋をタップすると屋内イラスト（パターン3～7）に遷移するハブ画面。</p>
+    <table>
+      <tr><th style="width:20%;">見せ方（画面状態）</th><td>敷地全体イラストを表示した状態。建屋ピンをタップ→棟名と「この棟のマップを見る」ボタン→屋内イラストへ遷移。通行止め区間と迂回路も画面内に常時表示しておく。</td></tr>
+      <tr><th>登録データパターン</th><td>建屋ピン（A棟～E棟）、通用口・受付、避難場所、通行止め区間、迂回ルート</td></tr>
+      <tr><th>登録数の目安</th><td>建屋　<b>5棟</b>／通用口・受付　<b>3か所</b>／避難場所　<b>2か所</b>／通行止め区間　<b>1件</b>／迂回ルート　<b>1件</b>（計12スポット程度）</td></tr>
+      <tr><th>対応シーン</th><td>提案書 p.5「活用シーン②通行規制・避難経路・防災」の全体像</td></tr>
+    </table>
+  </div>
+
+  <div class="grid2">
+    <div class="card pattern-card">
+      <h3><span class="num">3</span>屋内イラスト①：ヒヤリハット　<span class="tag tag-illust-in">イラスト（屋内）</span></h3>
+      <table>
+        <tr><th style="width:34%;">見せ方</th><td>製造フロアイラスト上のピンをタップ→詳細カード（写真・発生日時・対応状況）をポップアップ表示。ステータス別に色分け。</td></tr>
+        <tr><th>登録データ</th><td>ヒヤリハットピン（<span class="legend-dot" style="background:#d9432c;"></span>未対応／<span class="legend-dot" style="background:#e0a020;"></span>対応中／<span class="legend-dot" style="background:#2e9e5b;"></span>対応済み）＋現場写真・コメント付き詳細カード</td></tr>
+        <tr><th>登録数</th><td>合計 <b>10～12件</b>（未対応3／対応中3／対応済み4～6）</td></tr>
+        <tr><th>参照</th><td>提案書 p.4</td></tr>
+      </table>
+    </div>
+    <div class="card pattern-card">
+      <h3><span class="num">4</span>屋内イラスト②：通行規制・避難経路　<span class="tag tag-illust-in">イラスト（屋内）</span></h3>
+      <table>
+        <tr><th style="width:34%;">見せ方</th><td>通路イラスト上に通行止め区間（赤×）を表示→迂回ルート（黄色ライン）を重ねて表示→避難口・避難動線（緑）を切替表示。</td></tr>
+        <tr><th>登録データ</th><td>通行止め区間、迂回ルート、避難場所・避難動線</td></tr>
+        <tr><th>登録数</th><td>通行止め区間 <b>2～3件</b>／迂回ルート <b>2件</b>／避難場所・動線 <b>3～4件</b>（計8～9件）</td></tr>
+        <tr><th>参照</th><td>提案書 p.5</td></tr>
+      </table>
+    </div>
+    <div class="card pattern-card">
+      <h3><span class="num">5</span>屋内イラスト③：教育・技術継承　<span class="tag tag-illust-in">イラスト（屋内）</span></h3>
+      <table>
+        <tr><th style="width:34%;">見せ方</th><td>設備エリアイラスト上の動画再生ピン（オレンジ丸）をタップ→操作手順動画を再生。多言語切替ボタンで表示言語を切り替えるデモも行う。</td></tr>
+        <tr><th>登録データ</th><td>動画再生ピン（充填機／検査ライン／保護具着用エリア／包装ライン 等）＋多言語ラベル</td></tr>
+        <tr><th>登録数</th><td>動画ピン <b>6～8件</b>／デモ対応言語 <b>3言語</b>（日本語・英語・ベトナム語など）</td></tr>
+        <tr><th>参照</th><td>提案書 p.6</td></tr>
+      </table>
+    </div>
+    <div class="card pattern-card">
+      <h3><span class="num">6</span>屋内イラスト④：衛生管理（防虫・防鼠）　<span class="tag tag-illust-in">イラスト（屋内）</span></h3>
+      <table>
+        <tr><th style="width:34%;">見せ方</th><td>フロアイラスト上に防鼠／防虫トラップをアイコン別・色別に表示。捕獲多発ゾーンをオレンジの着色エリアで重ねて可視化。ピンから点検記録画面へ遷移。</td></tr>
+        <tr><th>登録データ</th><td>防鼠トラップ、防虫トラップ、捕獲多発ゾーン（着色エリア）</td></tr>
+        <tr><th>登録数</th><td>防鼠トラップ <b>8～10件</b>／防虫トラップ <b>8～10件</b>／捕獲多発ゾーン <b>2～3エリア</b>（計18～23件）</td></tr>
+        <tr><th>参照</th><td>提案書 p.7</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card pattern-card">
+    <h3><span class="num">7</span>屋内イラスト⑤：資産管理・IoT／カメラ連携　<span class="tag tag-illust-in">イラスト（屋内）</span></h3>
+    <table>
+      <tr><th style="width:20%;">見せ方（画面状態）</th><td>フロア全体イラスト上で、監視カメラピンをタップ→ライブ/静止画映像を表示。IoTセンサーピンで温度・湿度の数値とアラートを表示。GPS追跡ピンで車両・フォークリフトの位置がリアルタイムに動く様子を見せる。</td></tr>
+      <tr><th>登録データパターン</th><td>監視カメラ、IoTセンサー（温度／湿度等）、重要資産・車両トラッキング</td></tr>
+      <tr><th>登録数の目安</th><td>監視カメラ <b>4～6件</b>／IoTセンサー <b>4～6件</b>／車両・資産トラッキング <b>3～5件</b>（計11～17件）</td></tr>
+      <tr><th>対応シーン</th><td>提案書 p.8</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- DATA -->
+<section id="data">
+  <h2 class="sec-title">登録データ指示（一覧）</h2>
+  <p class="sec-desc">パターンごとの登録データと件数の一覧。データ登録担当はこの表の件数を目安に、管理画面（マップ→設備／通行止め）から登録する。</p>
+  <table>
+    <tr><th>No.</th><th>パターン</th><th>登録データ種別</th><th>件数目安</th><th>備考</th></tr>
+    <tr><td>1</td><td>屋外・デジタルマップ</td><td>拠点ピン＋稼働KPIバッジ</td><td>3～4件</td><td>本社工場／第二工場／物流センター／研究所 等、架空拠点名でよい</td></tr>
+    <tr><td>2</td><td>屋外・イラストマップ</td><td>建屋／通用口／避難場所／通行止め／迂回路</td><td>計12件程度</td><td>建屋名はA～E棟等の記号で統一</td></tr>
+    <tr><td>3</td><td>屋内①ヒヤリハット</td><td>ヒヤリハットピン＋詳細カード（写真・日時・ステータス）</td><td>10～12件</td><td>未対応3／対応中3／対応済み4～6で色分け</td></tr>
+    <tr><td>4</td><td>屋内②通行規制・避難</td><td>通行止め区間／迂回ルート／避難場所・動線</td><td>8～9件</td><td>通行止めは申請→承認のフローも1件はデモできる状態にする</td></tr>
+    <tr><td>5</td><td>屋内③教育・技術継承</td><td>動画再生ピン＋多言語ラベル</td><td>動画6～8件／言語3言語</td><td>動画は仮のサンプル動画で可。実機材動画は後日差替え</td></tr>
+    <tr><td>6</td><td>屋内④衛生管理</td><td>防鼠トラップ／防虫トラップ／捕獲多発ゾーン</td><td>計18～23件</td><td>ゾーンは着色エリア機能を使用</td></tr>
+    <tr><td>7</td><td>屋内⑤資産管理・IoT</td><td>監視カメラ／IoTセンサー／車両GPS</td><td>計11～17件</td><td>IoT数値はデモ用に温度・湿度のダミー値でよい</td></tr>
+  </table>
+  <p class="footnote">合計スポット数の目安：約70～95件（7パターン合算）。ブースでの操作性を優先し、1画面あたり詰め込みすぎない密度を保つこと。</p>
+</section>
+
+<!-- TEAM -->
+<section id="team">
+  <h2 class="sec-title">チームへの指示事項</h2>
+  <p class="sec-desc">上記のパターン・データを前提に、各担当が迷わず着手できるよう役割と依頼内容を整理。</p>
+
+  <div class="grid3">
+    <div class="card">
+      <h3 style="margin-top:0;font-size:14px;color:var(--navy);">① イラスト制作担当</h3>
+      <ul style="font-size:13px;padding-left:18px;margin:0;">
+        <li>屋外プラント全体イラスト　1点</li>
+        <li>屋内フロアイラスト　5点（①ヒヤリハット／②通行規制／③教育／④衛生管理／⑤資産管理の各エリア）</li>
+        <li>提案書 p.4～p.8のイラストをテイストの参考にする</li>
+        <li>締切：8/7（金）</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0;font-size:14px;color:var(--navy);">② データ登録担当</h3>
+      <ul style="font-size:13px;padding-left:18px;margin:0;">
+        <li>「登録データ指示」タブの件数に沿って管理画面から登録</li>
+        <li>ピンの写真・動画はダミー素材で先行登録し、後日差替え可</li>
+        <li>環境：demo-mappro.smartmap-pro.com（ID/PWは概要タブ参照）</li>
+        <li>締切：8/11（火）</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0;font-size:14px;color:var(--navy);">③ 動作確認・リハーサル担当</h3>
+      <ul style="font-size:13px;padding-left:18px;margin:0;">
+        <li>スマホ／タブレット／PCの3デバイスで表示確認</li>
+        <li>①→⑦のデモ動線を通しで1回リハーサル</li>
+        <li>会場Wi-Fi不安定時の代替（オフライン画面キャプチャ）も準備</li>
+        <li>締切：8/14（金）</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0;font-size:14px;color:var(--navy);">依頼時の共有事項（コピー用）</h3>
+    <p style="font-size:13px;">以下をそのままチームに共有してよい。</p>
+    <div class="env-box" style="font-family:inherit;">
+      DXPO東京'26（8/18-19）ブース用デモ画面の準備をお願いします。<br>
+      構成は「屋外デジタルマップ→屋外イラスト→屋内イラスト①～⑤」の7パターンです。<br>
+      各パターンの見せ方・登録データ・件数は「画面パターン設計」「登録データ指示」タブの通りです。<br>
+      デモ環境：https://demo-mappro.smartmap-pro.com/wsroot/login （ID・PWは別途共有）<br>
+      不明点があれば都度確認してください。まずは屋内イラスト①（ヒヤリハット）から着手をお願いします。
+    </div>
+  </div>
+</section>
+
+<!-- SCHEDULE -->
+<section id="schedule">
+  <h2 class="sec-title">プロジェクト管理表・準備スケジュール</h2>
+  <p class="sec-desc">本日 2026/7/22 起点、DXPO東京'26（8/18-19）逆算。全体で約4週間。</p>
+
+  <div class="card">
+    <h3 style="margin-top:0;font-size:14px;color:var(--navy);">フェーズ進捗</h3>
+    <table>
+      <tr><th style="width:22%;">フェーズ</th><th style="width:16%;">期間</th><th>進捗</th><th style="width:12%;">状態</th></tr>
+      <tr><td>①パターン確定・指示出し</td><td>7/22～7/24</td><td class="progressbar"><span style="width:80%;"></span></td><td><span class="badge b-progress">進行中</span></td></tr>
+      <tr><td>②イラスト制作</td><td>7/25～8/7</td><td class="progressbar"><span style="width:0%;"></span></td><td><span class="badge b-todo">未着手</span></td></tr>
+      <tr><td>③データ登録・システム設定</td><td>7/28～8/11</td><td class="progressbar"><span style="width:0%;"></span></td><td><span class="badge b-todo">未着手</span></td></tr>
+      <tr><td>④テスト運用・リハーサル</td><td>8/12～8/14</td><td class="progressbar"><span style="width:0%;"></span></td><td><span class="badge b-todo">未着手</span></td></tr>
+      <tr><td>⑤最終確認・搬入準備</td><td>8/17</td><td class="progressbar"><span style="width:0%;"></span></td><td><span class="badge b-todo">未着手</span></td></tr>
+      <tr><td>⑥本番（DXPO東京'26）</td><td>8/18～8/19</td><td class="progressbar"><span style="width:0%;"></span></td><td><span class="badge b-todo">未着手</span></td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0;font-size:14px;color:var(--navy);">タスク一覧</h3>
+    <table>
+      <tr><th>No.</th><th>タスク</th><th>担当</th><th>期限</th><th>状態</th><th>備考</th></tr>
+      <tr><td>1</td><td>7パターンの画面設計・登録データ件数の確定</td><td>鎌田</td><td>7/24</td><td><span class="badge b-progress">進行中</span></td><td>本資料で確定</td></tr>
+      <tr><td>2</td><td>チームへの指示出し（共有事項の展開）</td><td>鎌田</td><td>7/24</td><td><span class="badge b-todo">未着手</span></td><td>「チームへの指示事項」参照</td></tr>
+      <tr><td>3</td><td>屋外プラント全体イラスト制作</td><td>イラスト制作担当</td><td>7/31</td><td><span class="badge b-todo">未着手</span></td><td>建屋5棟・通用口・避難場所を含む</td></tr>
+      <tr><td>4</td><td>屋内フロアイラスト5点制作</td><td>イラスト制作担当</td><td>8/7</td><td><span class="badge b-todo">未着手</span></td><td>①～⑤各シーン</td></tr>
+      <tr><td>5</td><td>拠点ピン（デジタルマップ）登録</td><td>データ登録担当</td><td>8/4</td><td><span class="badge b-todo">未着手</span></td><td>3～4拠点</td></tr>
+      <tr><td>6</td><td>屋外イラストへのスポット登録</td><td>データ登録担当</td><td>8/6</td><td><span class="badge b-todo">未着手</span></td><td>建屋・通用口・避難場所・通行止め・迂回路</td></tr>
+      <tr><td>7</td><td>屋内①～⑤へのスポット登録</td><td>データ登録担当</td><td>8/11</td><td><span class="badge b-todo">未着手</span></td><td>「登録データ指示」表の件数どおり</td></tr>
+      <tr><td>8</td><td>動画・写真素材の差替え</td><td>データ登録担当</td><td>8/12</td><td><span class="badge b-todo">未着手</span></td><td>ダミー→本番素材</td></tr>
+      <tr><td>9</td><td>3デバイス（スマホ／タブレット／PC）動作確認</td><td>動作確認担当</td><td>8/13</td><td><span class="badge b-todo">未着手</span></td><td>会場想定のWi-Fi環境でも確認</td></tr>
+      <tr><td>10</td><td>デモ動線リハーサル（①→⑦通し）</td><td>動作確認担当</td><td>8/14</td><td><span class="badge b-todo">未着手</span></td><td>説明トークも合わせて練習</td></tr>
+      <tr><td>11</td><td>オフライン用バックアップ（画面キャプチャ／動画）準備</td><td>動作確認担当</td><td>8/14</td><td><span class="badge b-todo">未着手</span></td><td>回線トラブル時の代替</td></tr>
+      <tr><td>12</td><td>最終レビュー・修正</td><td>鎌田</td><td>8/17</td><td><span class="badge b-todo">未着手</span></td><td></td></tr>
+      <tr><td>13</td><td>ブース搬入・現地セットアップ</td><td>担当者未定</td><td>8/17～8/18</td><td><span class="badge b-todo">未着手</span></td><td>タブレット／充電・通信環境を持参</td></tr>
+      <tr><td>14</td><td>DXPO東京'26 出展本番</td><td>全員</td><td>8/18～8/19</td><td><span class="badge b-todo">未着手</span></td><td>東京ビッグサイト 西1・2・3ホール</td></tr>
+    </table>
+  </div>
+
+  <p class="footnote">※ 担当者名・期限は仮のたたき台。関係者確定後に更新すること。※ 本表はスプレッドシートではなくHTMLでの一元共有のため、更新の都度このファイルを直接編集する。</p>
+</section>
+
+</main>
+
+<script>
+  document.querySelectorAll('#tabnav button').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('#tabnav button').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('main section').forEach(s=>s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+</script>
+
+
+</div>
+<script>
+function checkGate(){
+  var v = document.getElementById('gate-pw').value;
+  if(v === 'mpp'){
+    document.getElementById('gate').style.display='none';
+    document.getElementById('protected-content').style.display='block';
+  } else {
+    document.getElementById('gate-error').style.display='block';
+  }
+}
+document.getElementById('gate-pw').addEventListener('keydown', function(e){ if(e.key==='Enter') checkGate(); });
+</script>
+</body>
+</html>
