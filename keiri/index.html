@@ -1,0 +1,335 @@
+<!--
+CLAUDE_RULES:
+- セクション見出し: border-left: 5px solid #27AE60（緑固定）
+- ボックス類: 背景なし・点線ボーダー（塗りつぶし禁止）
+- ヘッダー: WorldWideSystem + Ver x.x + 日付
+- GitHubプッシュ: push_github.py で1コマンド完了
+-->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>経理処理 請求書パターン一覧</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif; background: #F7F6F3; color: #1A1A1A; }
+
+  /* ── 認証画面 ── */
+  #auth-screen {
+    position: fixed; inset: 0; background: #2C2C2A;
+    display: flex; align-items: center; justify-content: center; z-index: 9999;
+  }
+  .auth-box {
+    background: #fff; border-radius: 12px; padding: 48px 40px;
+    width: 340px; box-shadow: 0 8px 32px rgba(0,0,0,.3);
+  }
+  .auth-logo { text-align: center; margin-bottom: 28px; }
+  .auth-logo .mark {
+    width: 52px; height: 52px; background: #EF9F27; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: bold; color: #412402; margin-bottom: 10px;
+  }
+  .auth-logo h1 { font-size: 15px; color: #444; font-weight: 600; }
+  .auth-logo p  { font-size: 12px; color: #888; margin-top: 4px; }
+  .auth-field { margin-bottom: 16px; }
+  .auth-field label { display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 500; }
+  .auth-field input {
+    width: 100%; border: 1.5px solid #DDD; border-radius: 6px;
+    padding: 10px 12px; font-size: 14px; outline: none; transition: border .2s;
+  }
+  .auth-field input:focus { border-color: #EF9F27; }
+  .auth-btn {
+    width: 100%; background: #EF9F27; color: #412402; font-weight: bold;
+    border: none; border-radius: 6px; padding: 12px; font-size: 14px;
+    cursor: pointer; margin-top: 8px; transition: background .2s;
+  }
+  .auth-btn:hover { background: #E09020; }
+  .auth-err { color: #C0392B; font-size: 12px; text-align: center; margin-top: 10px; display: none; }
+
+  #main { display: none; }
+
+  /* ── ヘッダー ── */
+  .site-header {
+    background: #2C2C2A; padding: 14px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .site-header .logo { display:flex; align-items:center; gap:12px; color:#fff; }
+  .site-header .logo-mark {
+    width: 34px; height: 34px; background:#EF9F27; border-radius:8px;
+    display:flex; align-items:center; justify-content:center; font-weight:bold; color:#412402; font-size:13px;
+  }
+  .site-header .logo-text { font-size: 13px; font-weight: 600; line-height:1.4; }
+  .badge { background:#3A3A38; color:#EF9F27; font-size:11px; padding:5px 10px; border-radius:20px; font-weight:600; white-space:nowrap; }
+
+  .page { max-width: 1100px; margin: 0 auto; padding: 32px 24px 60px; }
+
+  .section-heading { border-left: 5px solid #27AE60; padding-left: 12px;
+    font-weight: bold; font-size: 16px; margin: 36px 0 14px; color: #333; }
+  .lead { font-size: 13px; color: #555; margin-bottom: 14px; line-height: 1.7; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; background:#fff; }
+  th, td { border: 1px solid #E2E2DD; padding: 9px 10px; text-align: left; vertical-align: top; line-height:1.55; }
+  th { background: #2C2C2A; color: #fff; font-weight: 600; font-size: 12px; }
+  tr:nth-child(even) td { background: #FAFAF7; }
+  td.no { text-align:center; font-weight:bold; color:#EF9F27; background:#2C2C2A0d; width:40px; }
+  td.tag { white-space: nowrap; font-weight:600; }
+  .pill { display:inline-block; font-size:11px; padding:2px 8px; border-radius:12px; font-weight:600; }
+  .pill-auto  { background:#E9F7EF; color:#1E8449; border:1px solid #A9DFBF; }
+  .pill-semi  { background:#FEF5E7; color:#B9770E; border:1px solid #F5CBA7; }
+  .pill-manual{ background:#FDEDEC; color:#C0392B; border:1px solid #F5B7B1; }
+
+  .rule-box { border: 1.5px dashed #27AE60; background: transparent; border-radius: 8px; padding: 16px; margin: 18px 0; }
+  .rule-box h3 { font-size: 13px; color:#1E8449; margin-bottom: 8px; }
+  .rule-box ul { padding-left: 18px; font-size: 12.5px; line-height: 1.8; color:#333; }
+
+  .flow-table td.step { text-align:center; font-weight:bold; color:#fff; background:#2C2C2A; width:44px; }
+
+  .page-footer { text-align:center; font-size:11px; color:#999; padding: 30px 0 10px; }
+  @media (max-width: 760px) {
+    table, thead, tbody, th, td, tr { display:block; }
+    thead tr { display:none; }
+    tr { border:1px solid #E2E2DD; border-radius:8px; margin-bottom:10px; padding:8px; }
+    td { border:none; padding:4px 6px; }
+    td::before { content: attr(data-label); display:block; font-size:10px; font-weight:700; color:#EF9F27; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== 認証画面 ===== -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="mark">経</div>
+      <h1>経理処理 現状パターン一覧</h1>
+      <p>関係者限定の確認用ページです</p>
+    </div>
+    <div class="auth-field">
+      <label>認証コード</label>
+      <input type="password" id="auth-pass" placeholder="認証コードを入力" onkeydown="if(event.key==='Enter')doAuth()">
+    </div>
+    <button class="auth-btn" onclick="doAuth()">開く</button>
+    <div class="auth-err" id="auth-err">認証コードが正しくありません</div>
+  </div>
+</div>
+
+<!-- ===== メインコンテンツ ===== -->
+<div id="main">
+  <header class="site-header">
+    <div class="logo">
+      <div class="logo-mark">経</div>
+      <div class="logo-text">経理処理　請求書パターン一覧</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div style="text-align:right;line-height:1.7;">
+        <div style="font-weight:bold;color:#EF9F27;font-size:12px;letter-spacing:.04em">WorldWideSystem</div>
+        <div style="color:#D3D1C7;font-size:11px">Ver 1.0　2026.07.24</div>
+      </div>
+      <span class="badge">経理処理 効率化検討用</span>
+    </div>
+  </header>
+
+  <div class="page">
+    <div style="padding: 20px 0 8px; text-align:center;">
+      <h1 style="font-size:22px;font-weight:bold;color:#1A1A1A">請求書 発行・送付パターン一覧（現状整理）</h1>
+      <p style="font-size:12px;color:#888;margin-top:6px;">営業からの請求に関する発行元・送付方法・自動化状況を、パターンごとに番号付けして整理</p>
+    </div>
+
+    <!-- 1. パターン一覧 -->
+    <div class="section-heading">1. 請求書パターン一覧（No.1〜10）</div>
+    <p class="lead">発行元・システム・送付方法の組み合わせで、現状は以下10パターンに分類できる。自動化状況は「自動」「一部自動（手動送付あり）」「手動」の3区分。</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:36px;">No.</th>
+          <th>区分</th>
+          <th>発行元/システム</th>
+          <th>登録</th>
+          <th>送付方法</th>
+          <th>自動化状況</th>
+          <th>備考</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="no" data-label="No.">1</td>
+          <td data-label="区分">営業からの請求（misoca）</td>
+          <td data-label="発行元">misoca ①-1 メール自動予約送付</td>
+          <td data-label="登録">自動</td>
+          <td data-label="送付方法">メール自動予約送付</td>
+          <td data-label="自動化状況"><span class="pill pill-auto">完全自動</span></td>
+          <td data-label="備考">定額請求（請求名に月など変数を含まない）の場合のみ</td>
+        </tr>
+        <tr>
+          <td class="no" data-label="No.">2</td>
+          <td data-label="区分">営業からの請求（misoca）</td>
+          <td data-label="発行元">misoca ①-2 メール手動送付</td>
+          <td data-label="登録">自動</td>
+          <td data-label="送付方法">営業がチェック後、営業または経理が送信クリック</td>
+          <td data-label="自動化状況"><span class="pill pill-semi">一部自動</span></td>
+          <td data-label="備考">請求名に月など変数が入る場合はこちら</td>
+        </tr>
+        <tr>
+          <td class="no" data-label="No.">3</td>
+          <td data-label="区分">営業からの請求（misoca）</td>
+          <td data-label="発行元">misoca ② 郵送依頼</td>
+          <td data-label="登録">自動</td>
+          <td data-label="送付方法">営業がチェック後、営業または経理が手動クリック</td>
+          <td data-label="自動化状況"><span class="pill pill-semi">一部自動</span></td>
+          <td data-label="備考">郵送が必要な取引先向け</td>
+        </tr>
+        <tr>
+          <td class="no" data-label="No.">4</td>
+          <td data-label="区分">営業送付</td>
+          <td data-label="発行元">営業担当（個別作成）</td>
+          <td data-label="登録">手動</td>
+          <td data-label="送付方法">手動郵送</td>
+          <td data-label="自動化状況"><span class="pill pill-manual">手動</span></td>
+          <td data-label="備考">－</td>
+        </tr>
+        <tr>
+          <td class="no" data-label="No.">5</td>
+          <td data-label="区分">営業送付</td>
+          <td data-label="発行元">営業担当（個別作成）</td>
+          <td data-label="登録">手動</td>
+          <td data-label="送付方法">メールソフトから手動送付</td>
+          <td data-label="自動化状況"><span class="pill pill-manual">手動</span></td>
+          <td data-label="備考">－</td>
+        </tr>
+        <tr>
+          <td class="no" data-label="No.">6</td>
+          <td data-label="区分">営業送付</td>
+          <td data-label="発行元">楽楽販売</td>
+          <td data-label="登録">自動（案件登録時に設定）</td>
+          <td data-label="送付方法">楽楽販売から手動メール送付</td>
+          <td data-label="自動化状況"><span class="pill pill-semi">一部自動</span></td>
+          <td data-label="備考">「請求方法」設定は3章参照</td>
+        </tr>
+        <tr>
+          <td class="no" data-label="No.">7</td>
+          <td data-label="区分">SaaSから</td>
+          <td data-label="発行元">Bill One</td>
+          <td data-label="登録">要確認</td>
+          <td data-label="送付方法">Bill One経由で送付</td>
+          <td data-label="自動化状況"><span class="pill pill-semi">要確認</span></td>
+          <td data-label="備考">発行〜送付までの詳細フロー未確認</td>
+        </tr>
+        <tr>
+          <td class="no" data-label="No.">8</td>
+          <td data-label="区分">クライアント独自システム</td>
+          <td data-label="発行元">SMC cowcow</td>
+          <td data-label="登録">手動</td>
+          <td data-label="送付方法">クライアント指定システム上で処理</td>
+          <td data-label="自動化状況"><span class="pill pill-manual">手動</span></td>
+          <td data-label="備考">クライアントごとに運用ルールが異なる</td>
+        </tr>
+        <tr>
+          <td class="no" data-label="No.">9</td>
+          <td data-label="区分">クライアント独自システム</td>
+          <td data-label="発行元">平賀オリジナル</td>
+          <td data-label="登録">手動</td>
+          <td data-label="送付方法">クライアント指定システム上で処理</td>
+          <td data-label="自動化状況"><span class="pill pill-manual">手動</span></td>
+          <td data-label="備考">クライアントごとに運用ルールが異なる</td>
+        </tr>
+        <tr>
+          <td class="no" data-label="No.">10</td>
+          <td data-label="区分">クライアント指定</td>
+          <td data-label="発行元">各クライアント指定フォーマット</td>
+          <td data-label="登録">楽楽販売に個別請求書PDFを手動添付</td>
+          <td data-label="送付方法">楽楽販売から指定メールアドレスへ手動送信（例：キヤノン）</td>
+          <td data-label="自動化状況"><span class="pill pill-manual">手動</span></td>
+          <td data-label="備考">定期実行（自動化）は不可。宛先・形式を一覧管理できていない</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 2. 楽楽販売の請求方法 -->
+    <div class="section-heading">2. 楽楽販売の「請求方法」選択肢</div>
+    <p class="lead">楽楽販売では、取引先（請求先）ごとに以下いずれかの「請求方法」を選択して設定する。案件ごとの請求日・請求方法は随時設定できるが、経理へ連携されるのは月末締め処理のタイミングのみ。</p>
+    <table>
+      <thead>
+        <tr><th style="width:180px;">選択肢（楽楽販売）</th><th>対応するパターン（推定・要確認）</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="tag" data-label="選択肢">営業送付（常時）</td><td data-label="内容">No.6「営業送付」に対応</td></tr>
+        <tr><td class="tag" data-label="選択肢">営業送付（単月）</td><td data-label="内容">No.6の単月版（都度設定変更が必要と推定）</td></tr>
+        <tr><td class="tag" data-label="選択肢">経理送付</td><td data-label="内容">No.1〜3「misoca」で経理が発行・送付するケースに対応</td></tr>
+        <tr><td class="tag" data-label="選択肢">経理個別対応</td><td data-label="内容">No.7〜10「クライアント指定／独自システム」など、定型フローに乗らないケースに対応と推定</td></tr>
+      </tbody>
+    </table>
+
+    <!-- 3. 月次フロー -->
+    <div class="section-heading">3. 月次処理の流れ（現状フロー）</div>
+    <table class="flow-table">
+      <thead><tr><th style="width:50px;">Step</th><th>内容</th><th style="width:160px;">担当/システム</th></tr></thead>
+      <tbody>
+        <tr><td class="step" data-label="Step">1</td><td data-label="内容">案件ごとに楽楽販売上で請求日・請求方法を設定（随時入力可）</td><td data-label="担当">営業（楽楽販売）</td></tr>
+        <tr><td class="step" data-label="Step">2</td><td data-label="内容">設定内容が経理へ連携されるのは、月末締め処理のタイミングのみ</td><td data-label="担当">楽楽販売→経理</td></tr>
+        <tr><td class="step" data-label="Step">3</td><td data-label="内容">月末締め処理を実施。「請求方法」設定に応じて分岐（2章参照）</td><td data-label="担当">営業（楽楽販売）</td></tr>
+        <tr><td class="step" data-label="Step">4</td><td data-label="内容">締めデータをもとに会計システムへ取り込み</td><td data-label="担当">経理（弥生販売）</td></tr>
+        <tr><td class="step" data-label="Step">5</td><td data-label="内容">経理送付分は弥生販売から出力し郵送</td><td data-label="担当">経理</td></tr>
+        <tr><td class="step" data-label="Step">6</td><td data-label="内容">経理からのメール送付が必要なものはメール送付</td><td data-label="担当">経理</td></tr>
+        <tr><td class="step" data-label="Step">7</td><td data-label="内容">月末以外に発生した請求は、経理へ個別依頼、または営業が個別対応（経理・misoca経由）</td><td data-label="担当">経理／営業</td></tr>
+        <tr><td class="step" data-label="Step">8</td><td data-label="内容">営業請求が必要なものは、案件ごとに個別対応</td><td data-label="担当">営業</td></tr>
+      </tbody>
+    </table>
+
+    <!-- 4. 確認事項 -->
+    <div class="rule-box">
+      <h3>4. 現状把握のうえで確認が必要な点</h3>
+      <ul>
+        <li>楽楽販売の「請求方法」4区分と、1章パターン一覧との正確な対応関係</li>
+        <li>「営業送付（常時）」と「営業送付（単月）」の使い分け基準、単月時の設定変更運用</li>
+        <li>案件ごとの請求日・請求方法は随時設定可能だが、経理連携は月末締めのみである点（締め後に判明する内容がないか）</li>
+        <li>No.10 クライアント指定の手動メール送付は定期実行不可のため、対象クライアント数・毎月の手動対応工数</li>
+        <li>No.7 Bill One経由の請求について、発行〜送付までの具体的なフロー</li>
+        <li>No.8・9 SMC cowcow・平賀オリジナルの運用ルール・入力担当・頻度</li>
+        <li>No.10 クライアント指定フォーマット（キヤノン等）の対象クライアント一覧と、宛先・形式の管理方法</li>
+        <li>月末以外に発生する個別対応（No.7以外）の件数・頻度・発生トリガー</li>
+        <li>No.1「完全自動」の対象クライアント数・割合（現状の自動化率の把握）</li>
+        <li>請求名に変数が入るために手動対応（No.2）となっているクライアントについて、変数を使わない運用に変更できないか</li>
+      </ul>
+    </div>
+
+    <!-- 5. 課題・制約 -->
+    <div class="section-heading">5. 現状の課題・制約</div>
+    <div class="rule-box">
+      <h3>楽楽販売の他ソフト連携における制約</h3>
+      <ul>
+        <li>楽楽販売は楽楽請求など入金管理系ソフトとの連携が現状難しく、振込紐づけ・入金チェック・残金表示などを楽楽販売単体では完結できない</li>
+        <li>そのため入金消込・残金管理は別途手動対応が必要になっていると推定（詳細フローは要確認）</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="page-footer">経理処理 請求書パターン一覧　/ WorldWideSystem　2026.07.24<br>本ページは関係者限定の確認用です</div>
+</div>
+
+<script>
+(function(){
+  var k = sessionStorage.getItem('keiri_auth');
+  if(k === '1'){ show(); }
+})();
+function doAuth(){
+  var p = document.getElementById('auth-pass').value.trim();
+  if(p === 'keiri'){
+    sessionStorage.setItem('keiri_auth','1');
+    show();
+  } else {
+    document.getElementById('auth-err').style.display = 'block';
+    document.getElementById('auth-pass').value = '';
+  }
+}
+function show(){
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('main').style.display = 'block';
+}
+</script>
+
+</body>
+</html>
